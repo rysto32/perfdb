@@ -1,3 +1,103 @@
+cpu INTEL_ATOM
+    page Front_End
+    shortcut F
+        stat CPI
+        unhalted-cycles / instructions
+        good 0.5
+        ok 1
+        bad 2.0
+
+        stat Branch_Mispredicts
+        branch-mispredicts / branches
+        good 0.05
+        ok 0.15
+        bad 0.25
+
+cpu INTEL_CORE
+        stat CPI
+        cycles / instructions
+        good 0.5
+        ok 1
+        bad 2.0
+
+        stat Branch_Mispredicts
+        branch-mispredicts / branches
+        good 0.05
+        ok 0.15
+        bad 0.25
+
+cpu AMD_K7
+        stat CPI
+        cycles / instructions
+        good 0.5
+        ok 1
+        bad 2.0
+
+        stat Branch_Mispredicts
+        branch-mispredicts / branches
+        good 0.05
+        ok 0.15
+        bad 0.25
+
+cpu AMD_K7
+        stat CPI
+        unhalted-cycles / instructions
+        good 0.5
+        ok 1
+        bad 2.0
+
+        stat Branch_Mispredicts
+        branch-mispredicts / branches
+        good 0.05
+        ok 0.15
+        bad 0.25
+
+cpu INTEL_PIV
+        stat CPI
+        unhalted-cycles / instructions
+        good 0.5
+        ok 1
+        bad 2.0
+
+        stat Branch_Mispredicts
+        branch-mispredicts / branches
+        good 0.05
+        ok 0.15
+        bad 0.25
+
+cpu INTEL_P5
+        stat CPI
+        unhalted-cycles / instructions
+        good 0.5
+        ok 1
+        bad 2.0
+
+cpu INTEL_P6
+        stat CPI
+        unhalted-cycles / instructions
+        good 0.5
+        ok 1
+        bad 2.0
+
+        stat Branch_Mispredicts
+        branch-mispredicts / branches
+        good 0.05
+        ok 0.15
+        bad 0.25
+
+cpu INTEL_COREI7
+        stat CPI
+        unhalted-cycles / instructions
+        good 0.5
+        ok 1
+        bad 2.0
+
+        stat Branch_Mispredicts
+        branch-mispredicts / branches
+        good 0.05
+        ok 0.15
+        bad 0.25
+
 cpu INTEL_CORE2
     page Front_End
     shortcut F
