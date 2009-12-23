@@ -14,6 +14,8 @@ cpu INTEL_ATOM
         bad 0.25
 
 cpu INTEL_CORE
+    page Front_End
+    shortcut F
         stat CPI
         cycles / instructions
         good 0.5
@@ -27,6 +29,8 @@ cpu INTEL_CORE
         bad 0.25
 
 cpu AMD_K7
+    page Front_End
+    shortcut F
         stat CPI
         cycles / instructions
         good 0.5
@@ -40,6 +44,8 @@ cpu AMD_K7
         bad 0.25
 
 cpu AMD_K7
+    page Front_End
+    shortcut F
         stat CPI
         unhalted-cycles / instructions
         good 0.5
@@ -53,6 +59,8 @@ cpu AMD_K7
         bad 0.25
 
 cpu INTEL_PIV
+    page Front_End
+    shortcut F
         stat CPI
         unhalted-cycles / instructions
         good 0.5
@@ -66,6 +74,8 @@ cpu INTEL_PIV
         bad 0.25
 
 cpu INTEL_P5
+    page Front_End
+    shortcut F
         stat CPI
         unhalted-cycles / instructions
         good 0.5
@@ -73,6 +83,8 @@ cpu INTEL_P5
         bad 2.0
 
 cpu INTEL_P6
+    page Front_End
+    shortcut F
         stat CPI
         unhalted-cycles / instructions
         good 0.5
@@ -86,6 +98,8 @@ cpu INTEL_P6
         bad 0.25
 
 cpu INTEL_COREI7
+    page Front_End
+    shortcut F
         stat CPI
         unhalted-cycles / instructions
         good 0.5
