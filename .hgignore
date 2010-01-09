@@ -1,0 +1,7 @@
+syntax: glob
+*.o
+*~
+lex.cpp
+parser.cpp
+parser.cpp.h
+perfdb
