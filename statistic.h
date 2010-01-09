@@ -3,8 +3,10 @@
 
 #include <memory>
 #include <math.h>
+#include <map>
 
 #include "expression.h"
+#include "pmccontext.h"
 
 class Statistic
 {
@@ -12,6 +14,10 @@ class Statistic
     std::auto_ptr<Expression> m_expr;
 
     double m_goodThreshold, m_okThreshold, m_badThreshold;
+
+    std::map<int, double> m_cachedValues;
+
+    enum { ALL_CPUS = -1 };
 
     /* true if a larger value is better */
     bool ascending() const
@@ -74,6 +80,21 @@ public:
             else
                 return STAT_TERRIBLE;
         }
+    }
+
+    void setLastValue(double value, int cpu = ALL_CPUS)
+    {
+        m_cachedValues[cpu] = value;
+    }
+
+    double getLastValue(int cpu = ALL_CPUS)
+    {
+        std::map<int, double>::iterator it = m_cachedValues.find(cpu);
+
+        if(it == m_cachedValues.end())
+            throw PmcNotLoaded();
+
+        return it->second;
     }
 };
 

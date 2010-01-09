@@ -234,7 +234,6 @@ void loadPage(PmcContext & pmc, Page * page, size_t startIndex)
 {
     pmc.clearPmcs();
     PointerVector<Statistic>::iterator it;
-    erase();
     size_t index = 0;
     for(it = page->getStats().begin(); it != page->getStats().end(); ++it, ++index)
     {
@@ -459,10 +458,17 @@ int main(int argc, char ** argv)
 
         Curses curses(rate);
         time_t last_update = 0;
+        unsigned missedStatIndex = 0;
 
         while(!quit) {
             bool update;
+            if(missedStatIndex != statIndex)
+            {
+                statIndex = missedStatIndex;
+                loadPage(pmc, pageList[pageIndex], statIndex);
+            }
             int ch = getch();
+            missedStatIndex = 0;
 
             if(ch != ERR)
             {
@@ -489,7 +495,9 @@ int main(int argc, char ** argv)
                         {
                             pageIndex++;
                             statIndex = 0;
+                            missedStatIndex = 0;
                             loadPage(pmc, pageList[pageIndex], statIndex);
+                            erase();
                             update = true;
                         }
                         break;
@@ -501,27 +509,9 @@ int main(int argc, char ** argv)
                         {
                             pageIndex--;
                             statIndex = 0;
+                            missedStatIndex = 0;
                             loadPage(pmc, pageList[pageIndex], statIndex);
-                            update = true;
-                        }
-                        break;
-                    }
-                    case KEY_UP:
-                    {
-                        if(statIndex != 0)
-                        {
-                            statIndex--;
-                            loadPage(pmc, pageList[pageIndex], statIndex);
-                            update = true;
-                        }
-                        break;
-                    }
-                    case KEY_DOWN:
-                    {
-                        if(statIndex != pageList[pageIndex]->getStats().size() - 1)
-                        {
-                            statIndex++;
-                            loadPage(pmc, pageList[pageIndex], statIndex);
+                            erase();
                             update = true;
                         }
                         break;
@@ -533,7 +523,9 @@ int main(int argc, char ** argv)
                         {
                             pageIndex = indexIt->second;
                             statIndex = 0;
+                            missedStatIndex = 0;
                             loadPage(pmc, pageList[pageIndex], statIndex);
+                            erase();
                             update = true;
                         }
                         break;
@@ -565,6 +557,7 @@ int main(int argc, char ** argv)
 
                 PointerVector<Statistic>::iterator it;
                 PointerVector<Statistic> & stats = pageList[pageIndex]->getStats();
+                int statsRowsStart = row;
                 for(it = stats.begin(); it != stats.end(); ++it, ++row)
                 {
                     Statistic & stat = **it;
@@ -575,14 +568,27 @@ int main(int argc, char ** argv)
 
                     if(perCpu)
                     {
-                        for(i = 0; i < ncpu; i++)
+                        for(int cpu = 0; cpu < ncpu; cpu++)
                         {
-                            PerCpuExprEvaluator eval(pmc, i);
-                            move(row, HEADER_WIDTH + STAT_WIDTH * i);
+                            PerCpuExprEvaluator eval(pmc, cpu);
+                            move(row, HEADER_WIDTH + STAT_WIDTH * cpu);
 
-                            try {
-                                expr.accept(eval);
-                                double value = expr.getValue();
+                            try
+                            {
+                                double value;
+                                try
+                                {
+                                    expr.accept(eval);
+                                    value = expr.getValue();
+                                    stat.setLastValue(value, cpu);
+                                }
+                                catch (PmcNotLoaded & e)
+                                {
+                                    unsigned curIndex = row - statsRowsStart;
+                                    if(missedStatIndex == 0 && curIndex > statIndex)
+                                        missedStatIndex = curIndex;
+                                    value = stat.getLastValue(cpu);
+                                }
                                 Statistic::Status status = stat.getStatus(value);
                                 curses.startColor(status);
                                 attron(A_BOLD);
@@ -601,9 +607,22 @@ int main(int argc, char ** argv)
                         ExprEvaluator eval(pmc);
                         move(row, HEADER_WIDTH);
 
-                        try {
-                            expr.accept(eval);
-                            double value = expr.getValue();
+                        try
+                        {
+                            double value;
+                            try
+                            {
+                                expr.accept(eval);
+                                value = expr.getValue();
+                                stat.setLastValue(value);
+                            }
+                            catch (PmcNotLoaded & e)
+                            {
+                                unsigned curIndex = row - statsRowsStart;
+                                if(missedStatIndex == 0 && curIndex > statIndex)
+                                    missedStatIndex = curIndex;
+                                value = stat.getLastValue();
+                            }
                             Statistic::Status status = stat.getStatus(value);
                             curses.startColor(status);
                             attron(A_BOLD);
