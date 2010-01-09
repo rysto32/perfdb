@@ -269,7 +269,7 @@ parseCpuMask(char * optarg, int ncpu)
 
         if(cpu < 0 || cpu >= ncpu)
         {
-            throw new PmcException("Invalid cpu number in cpuspec passed to -c option");
+            throw PmcException("Invalid cpu number in cpuspec passed to -c option");
         }
 
         cpuMask |= (1 << cpu);
@@ -314,26 +314,34 @@ int main(int argc, char ** argv)
 {
     int rate = 1;
     int error;
-    size_t size;
     int ncpu;
     bool perCpu = false;
     int option;
     char * endp;
-    int cpuMask;
+    uint32_t cpuMask;
     std::string statsFile(dirname(argv[0]));
     statsFile += "/stats.txt";
 
-    size = sizeof(ncpu);
-    if (sysctlbyname("hw.ncpu", &ncpu, &size, NULL, 0) < 0)
-    {
-        perror("Could not read sysctl hw.ncpu");
-        return -1;
-    }
-
-    cpuMask = (1 << ncpu) - 1;
-
     try
     {
+        PmcContext pmc;
+
+        ncpu = pmc_ncpu();
+        cpuMask = (1 << ncpu) - 1;
+
+        if (ncpu > 1) {
+            uint32_t haltedcpus = 0;
+            size_t size;
+            size = sizeof(haltedcpus);
+            if (sysctlbyname("machdep.hlt_cpus", &haltedcpus, &size,
+                NULL, 0) < 0)
+            {
+                perror("Could not get value of sysctl machdep.hlt_cpus");
+                return -1;
+            }
+             cpuMask &= ~haltedcpus;
+        }
+
         while((option = getopt(argc, argv, "Cc:w:hf:")) != -1)
         {
             switch(option)
@@ -362,7 +370,8 @@ int main(int argc, char ** argv)
             }
         }
 
-        PmcContext pmc(cpuMask);
+        pmc.setCpuMask(cpuMask);
+
         yyin = fopen(statsFile.c_str(), "r");
 
         if(!yyin)

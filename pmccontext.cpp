@@ -39,8 +39,8 @@ PmcContext::getPmcErrorMessage(const std::string & event, const char * function,
     return message;
 }
 
-PmcContext::PmcContext(int cpus)
-    : m_cpuMask(cpus)
+PmcContext::PmcContext()
+  : m_cpuMask(~0)
 {
     int error = pmc_init();
 
