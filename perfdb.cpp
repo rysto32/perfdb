@@ -408,7 +408,7 @@ int main(int argc, char ** argv)
 
             if(c == 'q' || c == 'C')
             {
-                fprintf(stderr, "Page %s using reserved key %c\n",
+                fprintf(stderr, "Page %s using reserved key '%c'\n",
                         page->getName().c_str(), c);
             }
 

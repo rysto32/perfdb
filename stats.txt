@@ -28,7 +28,7 @@ cpu INTEL_CORE
         ok 0.15
         bad 0.25
 
-cpu AMD_K7
+cpu AMD_K6
     page Front_End
     shortcut F
         stat CPI

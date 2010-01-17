@@ -1,22 +1,18 @@
+PROG_CXX=perfdb
+SRCS=lex.cpp parser.cpp perfdb.cpp pmccontext.cpp
+CLEANFILES+= lex.cpp parser.cpp parser.cpp.h
+LDADD=-lpmc -lncurses
+MAN=
 
-CFLAGS=-I. -Wall -g -ggdb -O3
-
-OBJS=perfdb.o pmccontext.o parser.o lex.o
-EXEC=perfdb
-
-LOCAL_LIBS=-lpmc -lncurses
-
-all: ${EXEC}
-release: all
-
-parser.cpp: parser.yy
+parser.cpp parser.cpp.h: parser.yy
 	yacc -do parser.cpp parser.yy
 
-lex.cpp: lex.l
-	lex -olex.cpp lex.l
+lex.cpp: lex.ll
+	lex -olex.cpp lex.ll
 
-${EXEC}: ${OBJS}
-	${CXX} ${OBJS} -o $(EXEC) ${LOCAL_LIBS}
+beforedepend: lex.cpp parser.cpp
 
-clean:
-	rm -f ${EXEC} ${OBJS} parser.cpp lex.cpp
+CFLAGS+=-I. -I${.CURDIR}
+
+.include <bsd.prog.mk>
+
