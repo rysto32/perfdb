@@ -48,6 +48,8 @@ class PmcContext
     static std::string getPmcErrorMessage(const std::string & event, const char * function, int error);
 
     void clearCpuMap(PmcCpuMap & map);
+
+    void readPmc(const PmcMap::iterator & it);
 public:
     PmcContext();
 

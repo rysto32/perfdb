@@ -84,6 +84,13 @@ PmcContext::loadPmc(const std::string & name)
 
             cpuMask &= ~(1 << cpu);
         }
+
+        /* 
+         * Some pmcs start with a non-zero value(e.g. the tsc).  Most will start
+         * at zero. Read the value now so we get a consistent delta when we go
+         * to get the pmc value for the first time
+         */
+	readPmc(it);
     }
 }
 
@@ -108,21 +115,27 @@ PmcContext::clearPmcs()
     m_pmcs.clear();
 }
 
+void 
+PmcContext::readPmc(const PmcMap::iterator & it)
+{
+    PmcCpuMap::iterator jt;
+    for(jt = it->second.begin(); jt != it->second.end(); ++jt)
+    {
+        pmc_value_t v;
+        pmc_read(jt->second.m_id, &v);
+
+        jt->second.m_value = v - jt->second.m_lastAbsolute;
+        jt->second.m_lastAbsolute = v;
+    }
+}
+
 void
 PmcContext::readPmcs()
 {
     PmcMap::iterator it;
     for(it = m_pmcs.begin(); it != m_pmcs.end(); ++it)
     {
-        PmcCpuMap::iterator jt;
-        for(jt = it->second.begin(); jt != it->second.end(); ++jt)
-        {
-            pmc_value_t v;
-            pmc_read(jt->second.m_id, &v);
-
-            jt->second.m_value = v - jt->second.m_lastAbsolute;
-            jt->second.m_lastAbsolute = v;
-        }
+        readPmc(it);
     }
 }
 
