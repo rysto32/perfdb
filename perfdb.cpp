@@ -46,8 +46,8 @@ public:
             start_color();
             pair_content(0, &m_foregroundColour, &m_backgroundColour);
 
-            init_pair(Statistic::STAT_GOOD, COLOR_GREEN, m_backgroundColour);
-            init_pair(Statistic::STAT_OK, COLOR_MAGENTA, m_backgroundColour);
+            init_pair(Statistic::STAT_GOOD, COLOR_CYAN, m_backgroundColour);
+            init_pair(Statistic::STAT_OK, COLOR_GREEN, m_backgroundColour);
             init_pair(Statistic::STAT_BAD, COLOR_YELLOW, m_backgroundColour);
             init_pair(Statistic::STAT_TERRIBLE, COLOR_RED, m_backgroundColour);
         }
@@ -571,7 +571,7 @@ int main(int argc, char ** argv)
                         for(int cpu = 0; cpu < ncpu; cpu++)
                         {
                             PerCpuExprEvaluator eval(pmc, cpu);
-                            move(row, HEADER_WIDTH + STAT_WIDTH * cpu);
+                            move(row, HEADER_WIDTH + STAT_WIDTH * cpu - 1);
 
                             try
                             {
@@ -592,13 +592,13 @@ int main(int argc, char ** argv)
                                 Statistic::Status status = stat.getStatus(value);
                                 curses.startColor(status);
                                 attron(A_BOLD);
-                                printw("%.2lf\n", value);
+                                printw(" %.2lf\n", value);
                                 attroff(A_BOLD);
                                 curses.endColor(status);
                             }
                             catch(PmcNotLoaded & e)
                             {
-                                printw("N/A");
+                                printw(" N/A");
                             }
                         }
                     }
