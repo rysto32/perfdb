@@ -17,636 +17,413 @@
 #include "pointervector.h"
 #include "page.h"
 #include "cpu.h"
+#include "screenstate.h"
 #include "parser.cpp.h"
 
-static int quit = 0;
+bool quit = 0;
 
 #define HEADER_WIDTH 20
 #define STAT_WIDTH 6
 
-void quit_signal_handler(int sig)
+void
+quit_signal_handler(int sig)
 {
-    quit = 1;
+	quit = 1;
 }
 
 class Curses
 {
-    short m_backgroundColour, m_foregroundColour;
+private:
+	short backgroundColour;
+	short foregroundColour;
 public:
-    Curses(int rate)
-    {
-        initscr();
-        cbreak();
-        noecho();
-        keypad(stdscr, TRUE);
-        halfdelay(rate * 10);
+	Curses(int rate)
+	{
+		initscr();
+		cbreak();
+		noecho();
+		keypad(stdscr, TRUE);
+		halfdelay(rate * 10);
 
-        if(has_colors())
-        {
-            start_color();
-            pair_content(0, &m_foregroundColour, &m_backgroundColour);
+		if (has_colors()) {
+			start_color();
+			pair_content(0, &foregroundColour, &backgroundColour);
 
-            init_pair(Statistic::STAT_GOOD, COLOR_CYAN, m_backgroundColour);
-            init_pair(Statistic::STAT_OK, COLOR_GREEN, m_backgroundColour);
-            init_pair(Statistic::STAT_BAD, COLOR_YELLOW, m_backgroundColour);
-            init_pair(Statistic::STAT_TERRIBLE, COLOR_RED, m_backgroundColour);
-        }
-    }
+			init_pair(Statistic::STAT_GOOD, COLOR_CYAN,
+			    backgroundColour);
+			init_pair(Statistic::STAT_OK, COLOR_GREEN,
+			    backgroundColour);
+			init_pair(Statistic::STAT_BAD, COLOR_YELLOW,
+			    backgroundColour);
+			init_pair(Statistic::STAT_TERRIBLE, COLOR_RED,
+			    backgroundColour);
+		}
+	}
 
-    void startColor(Statistic::Status status)
-    {
-        if(has_colors())
-            attron(COLOR_PAIR(status));
-    }
+	void startColor(Statistic::Status status)
+	{
+		if (has_colors())
+			attron(COLOR_PAIR(status));
+	}
 
-    void endColor(Statistic::Status status)
-    {
-        if(has_colors())
-            attroff(COLOR_PAIR(status));
-    }
+	void endColor(Statistic::Status status)
+	{
+		if (has_colors())
+			attroff(COLOR_PAIR(status));
+	}
 
-    ~Curses()
-    {
-        endwin();
-    }
-};
-
-class ValidatePmcVisitor : public PostOrderExprVisitor
-{
-    PmcContext & m_pmc;
-
-public:
-    ValidatePmcVisitor(PmcContext & pmc)
-      : m_pmc(pmc)
-    {
-    }
-
-    virtual void visit(BinaryExpr & expr)
-    {
-    }
-
-    virtual void visit(PmcExpr & expr)
-    {
-        m_pmc.loadPmc(expr.getPmc());
-        m_pmc.clearPmcs();
-    }
-
-    virtual void visit(ConstExpr & expr)
-    {
-    }
-};
-
-class InitPmcVisitor : public PostOrderExprVisitor
-{
-    PmcContext & m_pmc;
-
-public:
-    InitPmcVisitor(PmcContext & pmc)
-      : m_pmc(pmc)
-    {
-    }
-
-    virtual void visit(BinaryExpr & expr)
-    {
-    }
-
-    virtual void visit(PmcExpr & expr)
-    {
-        try
-        {
-            m_pmc.loadPmc(expr.getPmc());
-        }
-        catch(PmcException & e)
-        {
-            //assume that this is because we ran out of PMCs, so ignore it
-        }
-    }
-
-    virtual void visit(ConstExpr & expr)
-    {
-    }
+	~Curses()
+	{
+		endwin();
+	}
 };
 
 class ExprEvaluator : public PostOrderExprVisitor
 {
-    PmcContext & m_pmc;
+	PmcContext &m_pmc;
 
-public:
-    ExprEvaluator(PmcContext & pmc)
-      : m_pmc(pmc)
-    {
-    }
+	public:
+	ExprEvaluator(PmcContext &pmc)
+	    : m_pmc(pmc)
+	{
+	}
 
-    virtual void visit(BinaryExpr & expr)
-    {
-        double left = expr.getLeft().getValue();
-        double right = expr.getRight().getValue();
-        double value;
+	virtual void visit(BinaryExpr &expr)
+	{
+		double left = expr.getLeft().getValue();
+		double right = expr.getRight().getValue();
+		double value;
 
-        switch(expr.getOp())
-        {
-            case BinaryExpr::ADD:
-                value = left + right;
-                break;
-            case BinaryExpr::SUB:
-                value = left - right;
-                break;
-            case BinaryExpr::MULT:
-                value = left * right;
-                break;
-            case BinaryExpr::DIV:
-                value = left / right;
-                break;
-            default:
-                abort();
-        }
+		switch (expr.getOp()) {
+		case BinaryExpr::ADD:
+			value = left + right;
+			break;
+		case BinaryExpr::SUB:
+			value = left - right;
+			break;
+		case BinaryExpr::MULT:
+			value = left * right;
+			break;
+		case BinaryExpr::DIV:
+			value = left / right;
+			break;
+		default:
+			abort();
+		}
 
-        expr.setValue(value);
-    }
+		expr.setValue(value);
+	}
 
-    virtual void visit(PmcExpr & expr)
-    {
-        expr.setValue(m_pmc.getPmc(expr.getPmc()));
-    }
+	virtual void visit(PmcExpr &expr)
+	{
+		expr.setValue(m_pmc.getPmc(expr.getPmc()));
+	}
 
-    virtual void visit(ConstExpr & expr)
-    {
-    }
+	virtual void visit(ConstExpr &expr)
+	{
+	}
 };
 
 class PerCpuExprEvaluator : public PostOrderExprVisitor
 {
-    PmcContext & m_pmc;
-    int m_cpu;
+	PmcContext & m_pmc;
+	int m_cpu;
 
-public:
-    PerCpuExprEvaluator(PmcContext & pmc, int cpu)
-      : m_pmc(pmc), m_cpu(cpu)
-    {
-    }
+	public:
+	PerCpuExprEvaluator(PmcContext &pmc, int cpu)
+	    : m_pmc(pmc), m_cpu(cpu)
+	{
+	}
 
-    virtual void visit(BinaryExpr & expr)
-    {
-        double left = expr.getLeft().getValue();
-        double right = expr.getRight().getValue();
-        double value;
+	virtual void visit(BinaryExpr &expr)
+	{
+		double left = expr.getLeft().getValue();
+		double right = expr.getRight().getValue();
+		double value;
 
-        switch(expr.getOp())
-        {
-            case BinaryExpr::ADD:
-                value = left + right;
-                break;
-            case BinaryExpr::SUB:
-                value = left - right;
-                break;
-            case BinaryExpr::MULT:
-                value = left * right;
-                break;
-            case BinaryExpr::DIV:
-                value = left / right;
-                break;
-            default:
-                abort();
-        }
+		switch (expr.getOp()) {
+		case BinaryExpr::ADD:
+			value = left + right;
+			break;
+		case BinaryExpr::SUB:
+			value = left - right;
+			break;
+		case BinaryExpr::MULT:
+			value = left * right;
+			break;
+		case BinaryExpr::DIV:
+			value = left / right;
+			break;
+		default:
+			throw std::runtime_error("Unrecognized operator type");
+		}
 
-        expr.setValue(value);
-    }
+		expr.setValue(value);
+	}
 
-    virtual void visit(PmcExpr & expr)
-    {
-        expr.setValue(m_pmc.getPmcCpu(expr.getPmc(), m_cpu));
-    }
+	virtual void visit(PmcExpr &expr)
+	{
+		expr.setValue(m_pmc.getPmcCpu(expr.getPmc(), m_cpu));
+	}
 
-    virtual void visit(ConstExpr & expr)
-    {
-        /* nothing to do because expr.getValue() will already
-         * return the right value for a ConstExpr
-         */
-    }
+	virtual void visit(ConstExpr &expr)
+	{
+		/* 
+		 * Nothing to do because expr.getValue() will already
+		 * return the right value for a ConstExpr
+		 */
+	}
 };
 
-extern FILE * yyin;
+extern FILE *yyin;
 int yyparse();
 extern int yydebug;
 extern YYSTYPE yyval;
 
-void loadPage(PmcContext & pmc, Page * page, size_t startIndex)
-{
-    pmc.clearPmcs();
-    PointerVector<Statistic>::iterator it;
-    size_t index = 0;
-    for(it = page->getStats().begin(); it != page->getStats().end(); ++it, ++index)
-    {
-        if(index >= startIndex)
-        {
-            InitPmcVisitor initPmc(pmc);
-            (*it)->getExpr().accept(initPmc);
-        }
-    }
-}
-
 void
 usage(char * exe)
 {
-    fprintf(stderr, "usage: %s [-C -c cpuspec -w rate -f stats_file ]\n", exe);
+	fprintf(stderr, "usage: %s [-C -c cpuspec -w rate -f stats_file ]\n", 
+	    exe);
 }
 
 int
 parseCpuMask(char * optarg, int ncpu)
 {
-    int cpu;
-    int cpuMask = 0;
-    char * endp = optarg;
+	int cpu;
+	int cpuMask = 0;
+	char *endp = optarg;
 
-    while(*endp != '\0') {
-        cpu = strtol(optarg, &endp, 10);
+	while (*endp != '\0') {
+		cpu = strtol(optarg, &endp, 10);
 
-        if(*endp != ',' && *endp != '\0')
-        {
-            throw PmcException("Invalid character in cpuspec passed to -c option");
-        }
+		if (*endp != ',' && *endp != '\0') {
+			throw PmcException(
+			    "Invalid character in cpuspec passed to -c option");
+		}
 
-        if(cpu < 0 || cpu >= ncpu)
-        {
-            throw PmcException("Invalid cpu number in cpuspec passed to -c option");
-        }
+		if (cpu < 0 || cpu >= ncpu) {
+			throw PmcException(
+			   "Invalid cpu number in cpuspec passed to -c option");
+		}
 
-        cpuMask |= (1 << cpu);
+		cpuMask |= (1 << cpu);
 
-        optarg = endp + 1;
-    }
+		optarg = endp + 1;
+	}
 
-    return cpuMask;
+	return cpuMask;
 }
 
 PointerVector<Page> &
 getPageList(PointerVector<CpuDef> & cpuDefs)
 {
-    PointerVector<CpuDef>::iterator it;
-    const struct pmc_cpuinfo * cpuInfo;
-    int error;
+	PointerVector<CpuDef>::iterator it;
+	const struct pmc_cpuinfo *cpuInfo;
+	const char *cpuName;
+	int error;
 
-    error = pmc_cpuinfo(&cpuInfo);
-    if(error)
-    {
-        std::string msg("error in pmc_cpuinfo: ");
-        msg += strerror(errno);
-        throw PmcException(msg);
-    }
+	error = pmc_cpuinfo(&cpuInfo);
+	if (error) {
+		std::string msg("error in pmc_cpuinfo: ");
+		msg += strerror(errno);
+		throw PmcException(msg);
+	}
 
-    const char * cpuName = pmc_name_of_cputype(cpuInfo->pm_cputype);
+	cpuName = pmc_name_of_cputype(cpuInfo->pm_cputype);
 
-    for(it = cpuDefs.begin(); it != cpuDefs.end(); ++it)
-    {
-        if((*it)->getName() == cpuName)
-        {
-            return (*it)->getPageList();
-        }
-    }
+	for (it = cpuDefs.begin(); it != cpuDefs.end(); ++it) {
+		if ((*it)->getName() == cpuName)
+			return (*it)->getPageList();
+	}
 
-    std::string msg("No definitions for CPU type ");
-    msg += cpuName;
-    throw PmcException(msg);
+	std::string msg("No definitions for CPU type ");
+	msg += cpuName;
+	throw PmcException(msg);
 }
 
-int main(int argc, char ** argv)
+static void
+clearHaltedCpus(uint32_t &cpuMask)
 {
-    int rate = 1;
-    int error;
-    int ncpu;
-    bool perCpu = false;
-    int option;
-    char * endp;
-    uint32_t cpuMask;
-    std::string statsFile(dirname(argv[0]));
-    statsFile += "/stats.txt";
+	uint32_t haltedcpus;
+	size_t size;
+	
+	haltedcpus = 0;
+	size = sizeof(haltedcpus);
+	if (sysctlbyname("machdep.hlt_cpus", &haltedcpus, &size, NULL, 0) < 0) {
+		throw PmcException("Could not get sysctl machdep.hlt_cpus");
+	}
+	cpuMask &= ~haltedcpus;
+}
 
-    try
-    {
-        PmcContext pmc;
+int
+main(int argc, char **argv)
+{
+	int rate = 1;
+	int error;
+	int ncpu;
+	bool perCpu = false;
+	int option;
+	char *endp;
+	uint32_t cpuMask;
+	std::string statsFile(dirname(argv[0]));
+	
+	statsFile += "/stats.txt";
+	try {
+		PmcContext pmc;
 
-        ncpu = pmc_ncpu();
-        cpuMask = (1 << ncpu) - 1;
+		ncpu = pmc_ncpu();
+		cpuMask = (1 << ncpu) - 1;
 
-        if (ncpu > 1) {
-            uint32_t haltedcpus = 0;
-            size_t size;
-            size = sizeof(haltedcpus);
-            if (sysctlbyname("machdep.hlt_cpus", &haltedcpus, &size,
-                NULL, 0) < 0)
-            {
-                perror("Could not get value of sysctl machdep.hlt_cpus");
-                return -1;
-            }
-             cpuMask &= ~haltedcpus;
-        }
+		if (ncpu > 1)
+			clearHaltedCpus(cpuMask);
 
-        while((option = getopt(argc, argv, "Cc:w:hf:")) != -1)
-        {
-            switch(option)
-            {
-                case 'C':
-                    perCpu = true;
-                    break;
-                case 'c':
-                    cpuMask = parseCpuMask(optarg, ncpu);
-                    break;
-                case 'w':
-                    rate = strtol(optarg, &endp, 10);
-                    if(*endp != '\0')
-                    {
-                        fprintf(stderr, "-w option requires numeric argument\n");
-                        return -1;
-                    }
-                    break;
-                case 'f':
-                    statsFile = optarg;
-                    break;
-                case 'h':
-                default:
-                    usage(argv[0]);
-                    return -1;
-            }
-        }
+		while ((option = getopt(argc, argv, "Cc:w:hf:")) != -1) {
+			switch (option) {
+			case 'C':
+				perCpu = true;
+				break;
+			case 'c':
+				cpuMask = parseCpuMask(optarg, ncpu);
+				break;
+			case 'w':
+				rate = strtol(optarg, &endp, 10);
+				if (*endp != '\0') {
+					fprintf(stderr, 
+					    "-w requires numeric argument\n");
+					return (-1);
+				}
+				break;
+			case 'f':
+				statsFile = optarg;
+				break;
+			case 'h':
+			default:
+				usage(argv[0]);
+				return (-1);
+			}
+		}
 
-        pmc.setCpuMask(cpuMask);
+		pmc.setCpuMask(cpuMask);
 
-        yyin = fopen(statsFile.c_str(), "r");
+		yyin = fopen(statsFile.c_str(), "r");
 
-        if(!yyin)
-        {
-            fprintf(stderr, "Could not read %s\n", statsFile.c_str());
-            return -1;
-        }
+		if (!yyin) {
+			fprintf(stderr, "Could not read %s\n", 
+			    statsFile.c_str());
+			return (-1);
+		}
 
-        error = yyparse();
-        if(error)
-        {
-            fprintf(stderr, "Could not parse %s\n", statsFile.c_str());
-            return -1;
-        }
+		error = yyparse();
+		if (error) {
+			fprintf(stderr, "Could not parse %s\n", 
+			    statsFile.c_str());
+			return (-1);
+		}
 
-        std::auto_ptr<PointerVector<CpuDef> > cpuList(yyval.cpuList);
+		std::auto_ptr<PointerVector<CpuDef> > cpuList(yyval.cpuList);
 
-        PointerVector<Page> & pageList = getPageList(*cpuList);
-        std::map<char, int> pageMap;
+		ScreenState state(getPageList(*cpuList), perCpu, pmc, rate);
 
-        int index = 0;
-        for(PointerVector<Page>::iterator it = pageList.begin(); it != pageList.end(); ++it, ++index)
-        {
-            Page * page = *it;
-            const std::string & shortcut = page->getShortcut();
+		signal(SIGBUS, quit_signal_handler);
+		signal(SIGTERM, quit_signal_handler);
 
-            if(shortcut.size() != 1)
-            {
-                fprintf(stderr, "Page %s has shortcut with more than one character(%s)\n",
-                        page->getName().c_str(), shortcut.c_str());
-                return -1;
-            }
+		state.LoadPage(pmc);
 
-            char c = shortcut[0];
+		Curses curses(rate);
 
-            if(c == 'q' || c == 'C')
-            {
-                fprintf(stderr, "Page %s using reserved key '%c'\n",
-                        page->getName().c_str(), c);
-            }
+		while (!quit) {
 
-            if(isdigit(c))
-            {
-                fprintf(stderr, "Page %s using reserved key '%c'\n",
-                        page->getName().c_str(), c);
-                return -1;
-            }
+			state.WaitForKeypress(pmc);
 
-            std::pair<std::map<char, int>::iterator, bool> inserted =
-                pageMap.insert(std::map<char, int>::value_type(c, index));
+			if (state.UpdateScreen()) {
+				pmc.readPmcs();
 
-            if(!inserted.second)
-            {
-                fprintf(stderr, "Page %s defined to use shortcut %c, but that is already used by %s\n",
-                       page->getName().c_str(), c, pageList[inserted.first->second]->getName().c_str());
-                return -1;
-            }
+				move(0, 0);
+				printw("%s: (hotkey %s)", state.ScreenName(),
+				    state.ScreenShortcut());
 
-            if(index < 10)
-            {
-                pageMap['1' + index] = index;
-            }
-            else if(index == 10)
-            {
-                pageMap['0'] = index;
-            }
+				int row = 1;
+				int i;
+				if (state.PerCPU()) {
+					for (i = 0; i < ncpu; i++) {
+						move(row, HEADER_WIDTH + STAT_WIDTH * i);
+						printw("CPU%d", i);
+					}
+				}
+				row++;
 
-            ValidatePmcVisitor validate(pmc);
-            PointerVector<Statistic> & stats = page->getStats();
-            PointerVector<Statistic>::iterator jt;
+				PointerVector<Statistic>::iterator it;
+				PointerVector<Statistic> &stats = state.ScreenStats();
+				int statsRowsStart = row;
+				for (it = stats.begin(); it != stats.end(); ++it, ++row) {
+					Statistic & stat = **it;
+					Expression & expr = stat.getExpr();
 
-            for(jt = stats.begin(); jt != stats.end(); ++jt)
-            {
-                /* will throw exception if there is an invalid pmc */
-                (*jt)->getExpr().accept(validate);
-            }
-        }
+					move(row, 0);
+					printw("%s: ", stat.getName().c_str());
 
-        signal(SIGBUS, quit_signal_handler);
-        signal(SIGTERM, quit_signal_handler);
+					if (state.PerCPU()) {
+						for (int cpu = 0; cpu < ncpu; cpu++) {
+							PerCpuExprEvaluator eval(pmc, cpu);
+							move(row, HEADER_WIDTH + STAT_WIDTH * cpu - 1);
 
-        size_t pageIndex = 0;
-        size_t statIndex = 0;
-        loadPage(pmc, pageList[pageIndex], statIndex);
+							try {
+								double value;
+								try {
+									expr.accept(eval);
+									value = expr.getValue();
+									stat.setLastValue(value, cpu);
+								} catch (PmcNotLoaded & e) {
+									state.MissedStat(row - statsRowsStart);
+									value = stat.getLastValue(cpu);
+								}
+								Statistic::Status status = stat.getStatus(value);
+								curses.startColor(status);
+								attron(A_BOLD);
+								printw(" %.2lf\n", value);
+								attroff(A_BOLD);
+								curses.endColor(status);
+							} catch (PmcNotLoaded & e) {
+								printw(" N/A");
+							}
+						}
+					} else {
+						ExprEvaluator eval(pmc);
+						move(row, HEADER_WIDTH);
 
-        Curses curses(rate);
-        time_t last_update = 0;
-        unsigned missedStatIndex = 0;
+						try {
+							double value;
+							try {
+								expr.accept(eval);
+								value = expr.getValue();
+								stat.setLastValue(value);
+							} catch (PmcNotLoaded & e) {
+								state.MissedStat(row - statsRowsStart);
+								value = stat.getLastValue();
+							}
+							Statistic::Status status = stat.getStatus(value);
+							curses.startColor(status);
+							attron(A_BOLD);
+							printw("%.2lf\n", value);
+							attroff(A_BOLD);
+							curses.endColor(status);
+						} catch(PmcNotLoaded & e) {
+							printw("Not Available");
+						}
+					}
+				}
 
-        while(!quit) {
-            bool update;
-            if(missedStatIndex != statIndex)
-            {
-                statIndex = missedStatIndex;
-                loadPage(pmc, pageList[pageIndex], statIndex);
-            }
-            int ch = getch();
-            missedStatIndex = 0;
+				refresh();
+				state.CompleteUpdate();
+			}
+		}
+	}
+	catch (PmcException & e)
+	{
+		fprintf(stderr, "%s\n", e.what());
+		return -1;
+	}
 
-            if(ch != ERR)
-            {
-                update = (time(NULL) - last_update) >= rate;
-
-                switch(ch)
-                {
-                    case 'q':
-                    {
-                        quit = true;
-                        break;
-                    }
-                    case 'C':
-                    {
-                        perCpu = !perCpu;
-                        erase();
-                        update = true;
-                        break;
-                    }
-                    case '>':
-                    case KEY_RIGHT:
-                    {
-                        if(pageIndex != pageList.size() - 1)
-                        {
-                            pageIndex++;
-                            statIndex = 0;
-                            missedStatIndex = 0;
-                            loadPage(pmc, pageList[pageIndex], statIndex);
-                            erase();
-                            update = true;
-                        }
-                        break;
-                    }
-                    case '<':
-                    case KEY_LEFT:
-                    {
-                        if(pageIndex != 0)
-                        {
-                            pageIndex--;
-                            statIndex = 0;
-                            missedStatIndex = 0;
-                            loadPage(pmc, pageList[pageIndex], statIndex);
-                            erase();
-                            update = true;
-                        }
-                        break;
-                    }
-                    default:
-                    {
-                        std::map<char, int>::iterator indexIt = pageMap.find(ch);
-                        if(indexIt != pageMap.end())
-                        {
-                            pageIndex = indexIt->second;
-                            statIndex = 0;
-                            missedStatIndex = 0;
-                            loadPage(pmc, pageList[pageIndex], statIndex);
-                            erase();
-                            update = true;
-                        }
-                        break;
-                    }
-                }
-            }
-            else
-                update = true;
-
-            if(update)
-            {
-                pmc.readPmcs();
-
-                move(0, 0);
-                printw("%s: (hotkey %c)", pageList[pageIndex]->getName().c_str(),
-                       pageList[pageIndex]->getShortcut()[0]);
-
-                int row = 1;
-                int i;
-                if(perCpu)
-                {
-                    for(i = 0; i < ncpu; i++)
-                    {
-                        move(row, HEADER_WIDTH + STAT_WIDTH * i);
-                        printw("CPU%d", i);
-                    }
-                }
-                row++;
-
-                PointerVector<Statistic>::iterator it;
-                PointerVector<Statistic> & stats = pageList[pageIndex]->getStats();
-                int statsRowsStart = row;
-                for(it = stats.begin(); it != stats.end(); ++it, ++row)
-                {
-                    Statistic & stat = **it;
-                    Expression & expr = stat.getExpr();
-
-                    move(row, 0);
-                    printw("%s: ", stat.getName().c_str());
-
-                    if(perCpu)
-                    {
-                        for(int cpu = 0; cpu < ncpu; cpu++)
-                        {
-                            PerCpuExprEvaluator eval(pmc, cpu);
-                            move(row, HEADER_WIDTH + STAT_WIDTH * cpu - 1);
-
-                            try
-                            {
-                                double value;
-                                try
-                                {
-                                    expr.accept(eval);
-                                    value = expr.getValue();
-                                    stat.setLastValue(value, cpu);
-                                }
-                                catch (PmcNotLoaded & e)
-                                {
-                                    unsigned curIndex = row - statsRowsStart;
-                                    if(missedStatIndex == 0 && curIndex > statIndex)
-                                        missedStatIndex = curIndex;
-                                    value = stat.getLastValue(cpu);
-                                }
-                                Statistic::Status status = stat.getStatus(value);
-                                curses.startColor(status);
-                                attron(A_BOLD);
-                                printw(" %.2lf\n", value);
-                                attroff(A_BOLD);
-                                curses.endColor(status);
-                            }
-                            catch(PmcNotLoaded & e)
-                            {
-                                printw(" N/A");
-                            }
-                        }
-                    }
-                    else
-                    {
-                        ExprEvaluator eval(pmc);
-                        move(row, HEADER_WIDTH);
-
-                        try
-                        {
-                            double value;
-                            try
-                            {
-                                expr.accept(eval);
-                                value = expr.getValue();
-                                stat.setLastValue(value);
-                            }
-                            catch (PmcNotLoaded & e)
-                            {
-                                unsigned curIndex = row - statsRowsStart;
-                                if(missedStatIndex == 0 && curIndex > statIndex)
-                                    missedStatIndex = curIndex;
-                                value = stat.getLastValue();
-                            }
-                            Statistic::Status status = stat.getStatus(value);
-                            curses.startColor(status);
-                            attron(A_BOLD);
-                            printw("%.2lf\n", value);
-                            attroff(A_BOLD);
-                            curses.endColor(status);
-                        }
-                        catch(PmcNotLoaded & e)
-                        {
-                            printw("Not Available");
-                        }
-                    }
-                }
-
-                refresh();
-                last_update = time(NULL);
-            }
-        }
-    }
-    catch (PmcException & e)
-    {
-        fprintf(stderr, "%s\n", e.what());
-        return -1;
-    }
-
-    return 0;
+	return 0;
 }

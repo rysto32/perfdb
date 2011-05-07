@@ -10,92 +10,87 @@
 
 class Statistic
 {
-    std::auto_ptr<std::string> m_name;
-    std::auto_ptr<Expression> m_expr;
+	std::auto_ptr<std::string> name;
+	std::auto_ptr<Expression> expr;
 
-    double m_goodThreshold, m_okThreshold, m_badThreshold;
+	double goodThreshold;
+	double okThreshold;
+	double badThreshold;
 
-    std::map<int, double> m_cachedValues;
+	std::map<int, double> cachedValues;
 
-    enum { ALL_CPUS = -1 };
+	enum { ALL_CPUS = -1 };
 
-    /* true if a larger value is better */
-    bool ascending() const
-    {
-        return m_goodThreshold > m_okThreshold;
-    }
+	/* true if a larger value is better */
+	bool ascending() const
+	{
+		return (goodThreshold > okThreshold);
+	}
 
 public:
-    enum Status { STAT_GOOD = 1, STAT_OK, STAT_BAD, STAT_TERRIBLE };
+	enum Status { STAT_GOOD = 1, STAT_OK, STAT_BAD, STAT_TERRIBLE };
 
-    Statistic(std::string * name, Expression * e, double good, double ok, double bad)
-      : m_name(name),
-        m_expr(e),
-        m_goodThreshold(good),
-        m_okThreshold(ok),
-        m_badThreshold(bad)
-    {
-    }
+	Statistic(std::string *n, Expression *e, double good, double ok, 
+	    double bad)
+		: name(n), expr(e), goodThreshold(good), okThreshold(ok),
+		    badThreshold(bad)
+	{
+	}
 
-    Statistic(const std::string & name, Expression * e, double good, double ok, double bad)
-      : m_name(new std::string(name)),
-        m_expr(e),
-        m_goodThreshold(good),
-        m_okThreshold(ok),
-        m_badThreshold(bad)
-    {
-    }
+	Statistic(const std::string &n, Expression *e, double good, double ok, 
+	    double bad)
+		: name(new std::string(n)), expr(e), goodThreshold(good), 
+		    okThreshold(ok), badThreshold(bad)
+	{
+	}
 
-    const std::string & getName() const
-    {
-        return *m_name.get();
-    }
+	const std::string &getName() const
+	{
+		return *name.get();
+	}
 
-    Expression & getExpr() const
-    {
-        return *m_expr.get();
-    }
+	Expression &getExpr() const
+	{
+		return *expr.get();
+	}
 
-    Status getStatus(double value) const
-    {
-        if(ascending())
-        {
-            if(isgreater(value, m_goodThreshold))
-                return STAT_GOOD;
-            else if(isgreater(value, m_okThreshold))
-                return STAT_OK;
-            else if(isgreater(value, m_badThreshold))
-                return STAT_BAD;
-            else
-                return STAT_TERRIBLE;
-        }
-        else
-        {
-            if(isless(value, m_goodThreshold))
-                return STAT_GOOD;
-            else if(isless(value, m_okThreshold))
-                return STAT_OK;
-            else if(isless(value, m_badThreshold))
-                return STAT_BAD;
-            else
-                return STAT_TERRIBLE;
-        }
-    }
+	Status getStatus(double value) const
+	{
+		if (ascending()) {
+			if (isgreater(value, goodThreshold))
+				return (STAT_GOOD);
+			else if (isgreater(value, okThreshold))
+				return (STAT_OK);
+			else if (isgreater(value, badThreshold))
+				return (STAT_BAD);
+			else
+				return (STAT_TERRIBLE);
+		} else {
+			if (isless(value, goodThreshold))
+				return (STAT_GOOD);
+			else if (isless(value, okThreshold))
+				return (STAT_OK);
+			else if (isless(value, badThreshold))
+				return (STAT_BAD);
+			else
+				return (STAT_TERRIBLE);
+		}
+	}
 
-    void setLastValue(double value, int cpu = ALL_CPUS)
-    {
-        m_cachedValues[cpu] = value;
-    }
+	void setLastValue(double value, int cpu = ALL_CPUS)
+	{
+		cachedValues[cpu] = value;
+	}
 
-    double getLastValue(int cpu = ALL_CPUS)
-    {
-        std::map<int, double>::iterator it = m_cachedValues.find(cpu);
+	double getLastValue(int cpu = ALL_CPUS)
+	{
+		std::map<int, double>::iterator it = cachedValues.find(cpu);
 
-        if(it == m_cachedValues.end())
-            throw PmcNotLoaded();
+		if(it == cachedValues.end())
+			throw PmcNotLoaded();
 
-        return it->second;
-    }
+		return (it->second);
+	}
 };
 
 #endif

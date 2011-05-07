@@ -6,30 +6,31 @@
 
 class Page
 {
-    std::auto_ptr<std::string> m_name;
-    std::auto_ptr<std::string> m_shortcut;
-    std::auto_ptr<PointerVector<Statistic> > m_stats;
+private:
+	std::auto_ptr<std::string> name;
+	std::auto_ptr<std::string> shortcut;
+	std::auto_ptr<PointerVector<Statistic> > stats;
 
 public:
-    Page(std::string * name, std::string * shortcut, PointerVector<Statistic> * stats)
-      : m_name(name), m_shortcut(shortcut), m_stats(stats)
-    {
-    }
+	Page(std::string *n, std::string *cut, PointerVector<Statistic> * stat)
+		: name(n), shortcut(cut), stats(stat)
+	{
+	}
 
-    const std::string & getName() const
-    {
-        return *m_name.get();
-    }
+	const std::string &getName() const
+	{
+		return *name.get();
+	}
 
-    const std::string & getShortcut() const
-    {
-        return *m_shortcut.get();
-    }
+	const std::string &getShortcut() const
+	{
+		return *shortcut.get();
+	}
 
-    PointerVector<Statistic> & getStats() const
-    {
-        return *m_stats.get();
-    }
+	PointerVector<Statistic> &getStats() const
+	{
+		return *stats.get();
+	}
 };
 
 #endif

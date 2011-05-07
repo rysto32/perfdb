@@ -7,15 +7,13 @@ template <typename T>
 class PointerVector : public std::vector<T*>
 {
 public:
-    ~PointerVector()
-    {
-        typename std::vector<T*>::iterator it;
-        for(it = this->begin(); it != this->end(); ++it)
-        {
-            delete *it;
-        }
-        this->clear();
-    }
+	~PointerVector()
+	{
+		typename std::vector<T*>::iterator it;
+		for (it = this->begin(); it != this->end(); ++it)
+			delete *it;
+		this->clear();
+	}
 };
 
 #endif
