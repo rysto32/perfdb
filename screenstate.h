@@ -6,15 +6,16 @@
 #include "pointervector.h"
 #include "page.h"
 
-typedef std::map<char, int> PageMap;
-
 /* This is global so signal handlers can modify it. */
 extern bool quit;
 
+class KeyAction;
+
 class ScreenState {
 private:
+	typedef std::map<char, KeyAction*> KeyMap;
 	PointerVector<Page> &pageList;
-	PageMap pageMap;
+	KeyMap keyMap;
 	
 	unsigned pageIndex;
 	unsigned statIndex;
@@ -30,6 +31,7 @@ private:
 public:
 	ScreenState(PointerVector<Page> &pages, bool pcpu, PmcContext &pmc, 
 	    int updateRate);
+	~ScreenState();
 
 	void LoadPage(PmcContext &pmc);
 	void WaitForKeypress(PmcContext &pmc);
@@ -45,6 +47,10 @@ public:
 	{
 		return perCpu;
 	}
+	
+	void TogglePerCpu();
+	void ChangePage(PmcContext &pmc, int newIndex);
+	void IncrementPage(PmcContext &pmc, int increment);
 };
 
 #endif

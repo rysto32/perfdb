@@ -2,6 +2,7 @@
 #include <curses.h>
 
 #include "screenstate.h"
+#include "keyaction.h"
 
 class ValidatePmcVisitor : public PostOrderExprVisitor
 {
@@ -67,12 +68,26 @@ ScreenState::ScreenState(PointerVector<Page> &pages, bool pcpu,
 	SetupShortcuts(pmc);
 }
 
+ScreenState::~ScreenState()
+{
+	KeyMap::iterator it;
+	
+	for (it = keyMap.begin(); it != keyMap.end(); ++it)
+		delete it->second;
+}
+
 void 
 ScreenState::SetupShortcuts(PmcContext &pmc)
 {
 	PointerVector<Page>::iterator it;
 	Page *page;
+	ChoosePageAction *choosePage;
 	int index;
+	
+	keyMap['q'] = new QuitAction;
+	keyMap['C'] = new PerCpuAction;
+	keyMap[KEY_LEFT] = new IncrementPageAction(-1);
+	keyMap[KEY_RIGHT] = new IncrementPageAction(1);
 
 	index = 0;
 	for (it = pageList.begin(); it != pageList.end(); ++it, ++index) {
@@ -90,33 +105,22 @@ ScreenState::SetupShortcuts(PmcContext &pmc)
 		}
 
 		char c = shortcut[0];
+		choosePage = new ChoosePageAction(index, page->getName());
 
-		if (c == 'q' || c == 'C' || isdigit(c)) {
-			std::string msg("Page ");
-			msg += page->getName();
-			msg += "using reserved key '";
-			msg += c;
-			msg += "'";
-			throw PmcException(msg);
-		}
-
-		std::pair<std::map<char, int>::iterator, bool> inserted =
-		    pageMap.insert(std::map<char, int>::value_type(c, index));
+		std::pair<KeyMap::iterator, bool> inserted =
+		    keyMap.insert(KeyMap::value_type(c, choosePage));
 
 		if (!inserted.second) {
+			delete choosePage;
+
 			std::string msg("Page ");
 			msg += page->getName();
-			msg += "defined to use shortcut ";
+			msg += " defined to use shortcut key ";
 			msg += c;
-			msg += ", but that is already used by";
-			msg += pageList[inserted.first->second]->getName();
+			msg += ", but that is already used by ";
+			msg += inserted.first->second->Name();
 			throw PmcException(msg);
 		}
-
-		if (index < 10)
-			pageMap['1' + index] = index;
-		else if (index == 10)
-			pageMap['0'] = index;
 
 		ValidatePmcVisitor validate(pmc);
 		PointerVector<Statistic> &stats = page->getStats();
@@ -131,6 +135,7 @@ ScreenState::SetupShortcuts(PmcContext &pmc)
 void
 ScreenState::WaitForKeypress(PmcContext &pmc)
 {
+	KeyAction *action;
 	int ch;
 
 	if (missedStatIndex != statIndex) {
@@ -149,51 +154,40 @@ ScreenState::WaitForKeypress(PmcContext &pmc)
 		return;
 	}
 	
-	switch (ch) {
-	case 'q':
-		quit = true;
-		break;
-	case 'C':
-		perCpu = !perCpu;
-		erase();
-		forceUpdate = true;
-		break;
-	case '>':
-	case KEY_RIGHT:
-		if (pageIndex != pageList.size() - 1) {
-			pageIndex++;
-			statIndex = 0;
-			missedStatIndex = 0;
-			LoadPage(pmc);
-			erase();
-			forceUpdate = true;
-		}
-		break;
-	case '<':
-	case KEY_LEFT:
-		if (pageIndex != 0) {
-			pageIndex--;
-			statIndex = 0;
-			missedStatIndex = 0;
-			LoadPage(pmc);
-			erase();
-			forceUpdate = true;
-		}
-		break;
-	default:
-		{
-			PageMap::iterator indexIt = pageMap.find(ch);
-			if (indexIt != pageMap.end()) {
-				pageIndex = indexIt->second;
-				statIndex = 0;
-				missedStatIndex = 0;
-				LoadPage(pmc);
-				erase();
-				forceUpdate = true;
-			}
-			break;
-		}
-	}
+	action = keyMap[ch];
+	
+	if (action != NULL)
+		action->Perform(pmc, *this);
+}
+
+void 
+ScreenState::TogglePerCpu()
+{
+	perCpu = !perCpu;
+	erase();
+	forceUpdate = true;
+}
+
+void 
+ScreenState::ChangePage(PmcContext &pmc, int newIndex)
+{
+	pageIndex = newIndex;
+	statIndex = 0;
+	missedStatIndex = 0;
+	LoadPage(pmc);
+	erase();
+	forceUpdate = true;
+}
+
+void 
+ScreenState::IncrementPage(PmcContext &pmc, int increment)
+{
+	int newPage;
+	
+	newPage = pageIndex + increment;
+	
+	if (newPage >= 0 && newPage < pageList.size())
+		ChangePage(pmc, newPage);
 }
 
 void

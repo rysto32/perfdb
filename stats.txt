@@ -136,6 +136,8 @@ cpu INTEL_COREI7
         ok 0.5
         bad 0.75
 
+    page "Memory Channel Utilization"
+    shortcut m
         stat Chan0_Util_Write
         QMC_BUSY.WRITE.CH0 / UCLOCK
         good 0.25

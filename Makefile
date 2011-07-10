@@ -1,5 +1,5 @@
 PROG_CXX=perfdb
-SRCS=lex.cpp parser.cpp perfdb.cpp pmccontext.cpp screenstate.cpp
+SRCS=lex.cpp parser.cpp perfdb.cpp pmccontext.cpp screenstate.cpp keyaction.cpp
 CLEANFILES+= lex.cpp parser.cpp parser.cpp.h
 LDADD=-lpmc -lncurses
 MAN=
