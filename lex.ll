@@ -40,7 +40,7 @@ cpu         { return CPU_TOK; }
 		return NUMBER;
 	}
 
-[a-zA-Z_][a-zA-Z_0-9.,=+]* {
+[a-zA-Z_][a-zA-Z_0-9.]* {
 		yylval.name = new std::string(yytext);
 		return ID;
 	}
@@ -50,6 +50,12 @@ cpu         { return CPU_TOK; }
 .	{
 		fprintf(stderr, "unexpected character %s\n", yytext);
 		return YYERRCODE;
+	}
+
+\"[^"]+\" {
+		/* yyleng - 2: 1 to remove trailing ", 1 to remove '\0' */
+		yylval.name = new std::string(yytext, 1, yyleng - 2);
+		return ID;
 	}
 
 <LINE_COMMENT>{

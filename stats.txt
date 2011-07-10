@@ -2,13 +2,13 @@ cpu INTEL_ATOM
     page Front_End
     shortcut F
         stat CPI
-        unhalted-cycles / instructions
+        "unhalted-cycles" / instructions
         good 0.5
         ok 1
         bad 2.0
 
         stat Branch_Mispredicts
-        branch-mispredicts / branches
+        "branch-mispredicts" / branches
         good 0.05
         ok 0.15
         bad 0.25
@@ -23,7 +23,7 @@ cpu INTEL_CORE
         bad 2.0
 
         stat Branch_Mispredicts
-        branch-mispredicts / branches
+        "branch-mispredicts" / branches
         good 0.05
         ok 0.15
         bad 0.25
@@ -38,7 +38,7 @@ cpu AMD_K6
         bad 2.0
 
         stat Branch_Mispredicts
-        branch-mispredicts / branches
+        "branch-mispredicts" / branches
         good 0.05
         ok 0.15
         bad 0.25
@@ -47,13 +47,13 @@ cpu AMD_K7
     page Front_End
     shortcut F
         stat CPI
-        unhalted-cycles / instructions
+        "unhalted-cycles" / instructions
         good 0.5
         ok 1
         bad 2.0
 
         stat Branch_Mispredicts
-        branch-mispredicts / branches
+        "branch-mispredicts" / branches
         good 0.05
         ok 0.15
         bad 0.25
@@ -62,13 +62,13 @@ cpu INTEL_PIV
     page Front_End
     shortcut F
         stat CPI
-        unhalted-cycles / instructions
+        "unhalted-cycles" / instructions
         good 0.5
         ok 1
         bad 2.0
 
         stat Branch_Mispredicts
-        branch-mispredicts / branches
+        "branch-mispredicts" / branches
         good 0.05
         ok 0.15
         bad 0.25
@@ -77,7 +77,7 @@ cpu INTEL_P5
     page Front_End
     shortcut F
         stat CPI
-        unhalted-cycles / instructions
+        "unhalted-cycles" / instructions
         good 0.5
         ok 1
         bad 2.0
@@ -86,13 +86,13 @@ cpu INTEL_P6
     page Front_End
     shortcut F
         stat CPI
-        unhalted-cycles / instructions
+        "unhalted-cycles" / instructions
         good 0.5
         ok 1
         bad 2.0
 
         stat Branch_Mispredicts
-        branch-mispredicts / branches
+        "branch-mispredicts" / branches
         good 0.05
         ok 0.15
         bad 0.25
@@ -101,16 +101,76 @@ cpu INTEL_COREI7
     page Front_End
     shortcut F
         stat CPI
-        unhalted-cycles / instructions
+        CPU_CLK_UNHALTED_CORE / instructions
         good 0.5
         ok 1
         bad 2.0
 
         stat Branch_Mispredicts
-        branch-mispredicts / branches
+        BR_MISP_EXEC.ANY / BR_INST_RETIRED.ALL_BRANCHES
         good 0.05
         ok 0.15
         bad 0.25
+
+        stat GQ_Write_Nonempty
+        GQ_CYCLES_NOT_EMPTY.WRITE_TRACKER / UCLOCK
+        good 0.25
+        ok 0.5
+        bad 0.75
+        
+        stat GQ_To_L3_Busy
+        GQ_DATA.TO_L3 / UCLOCK
+        good 0.25
+        ok 0.5
+        bad 0.75
+        
+        stat GQ_To_QPI_Busy
+        GQ_DATA.TO_QPI_QMC / UCLOCK
+        good 0.25
+        ok 0.5
+        bad 0.75
+        
+        stat GQ_To_Core_Busy
+        GQ_DATA.TO_CORES / UCLOCK
+        good 0.25
+        ok 0.5
+        bad 0.75
+
+        stat Chan0_Util_Write
+        QMC_BUSY.WRITE.CH0 / UCLOCK
+        good 0.25
+        ok 0.5
+        bad 0.75
+
+        stat Chan0_Util_Read
+        QMC_BUSY.READ.CH0 / UCLOCK
+        good 0.25
+        ok 0.5
+        bad 0.75
+        
+        stat Chan1_Util_Write
+        QMC_BUSY.WRITE.CH1 / UCLOCK
+        good 0.25
+        ok 0.5
+        bad 0.75
+
+        stat Chan1_Util_Read
+        QMC_BUSY.READ.CH1 / UCLOCK
+        good 0.25
+        ok 0.5
+        bad 0.75
+        
+        stat Chan2_Util_Write
+        QMC_BUSY.WRITE.CH2 / UCLOCK
+        good 0.25
+        ok 0.5
+        bad 0.75
+
+        stat Chan2_Util_Read
+        QMC_BUSY.READ.CH2 / UCLOCK
+        good 0.25
+        ok 0.5
+        bad 0.75
 
 cpu INTEL_CORE2
     page Front_End
@@ -160,7 +220,7 @@ cpu INTEL_CORE2
         bad 0.75
 
         stat L2I_Miss
-        L2_IFETCH,core=this,cachestate=i / INSTR_RETIRED_ANY
+        "L2_IFETCH,core=this,cachestate=i" / INSTR_RETIRED_ANY
         good 0.001
         ok 0.1
         bad 0.25
@@ -286,7 +346,7 @@ cpu INTEL_CORE2
     page Memory_Access_Conflicts
     shortcut m
         stat Load_Rate
-        L1D_CACHE_LD,cachestate=m+e+s+i / CPU_CLK_UNHALTED_CORE
+        "L1D_CACHE_LD,cachestate=m+e+s+i" / CPU_CLK_UNHALTED_CORE
         good 0.1
         ok 0.20
         bad 0.33
@@ -330,25 +390,25 @@ cpu INTEL_CORE2
         bad 0.5
 
         stat L2D_Misses_Insn
-        L2_LINES_IN,core=this,prefetch=both / INSTR_RETIRED_ANY
+        "L2_LINES_IN,core=this,prefetch=both" / INSTR_RETIRED_ANY
         good 0.01
         ok 0.05
         bad 0.1
 
         stat L2D_Miss_Rate
-        L2_LINES_IN,core=this,prefetch=both / L1D_REPL
+        "L2_LINES_IN,core=this,prefetch=both" / L1D_REPL
         good 0.01
         ok 0.1
         bad 0.25
 
         stat L2D_Demand_Miss
-        L2_LINES_IN,core=this,prefetch=exclude / INSTR_RETIRED_ANY
+        "L2_LINES_IN,core=this,prefetch=exclude" / INSTR_RETIRED_ANY
         good 0.01
         ok 0.05
         bad 0.1
 
         stat L2D_Demand_Miss_Rate
-        L2_LINES_IN,core=this,prefetch=exclude / L1D_REPL
+        "L2_LINES_IN,core=this,prefetch=exclude" / L1D_REPL
         good 0.01
         ok 0.1
         bad 0.25
@@ -418,7 +478,7 @@ cpu INTEL_CORE2
         bad 0.15
 
         stat DTLB_St_Miss_Rate
-        DTLB_MISSES.MISS_LD / L1D_CACHE_ST,cachestate=m+e+s+i
+        DTLB_MISSES.MISS_LD / "L1D_CACHE_ST,cachestate=m+e+s+i"
         good 0.01
         ok 0.05
         bad 0.15
@@ -426,19 +486,19 @@ cpu INTEL_CORE2
     page Multicore_Memory_Interaction
     shortcut i
         stat Mod_Sharing
-        EXT_SNOOP,agent=any,snoopresponse=hitm / INSTR_RETIRED_ANY
+        "EXT_SNOOP,agent=any,snoopresponse=hitm" / INSTR_RETIRED_ANY
         good 0.1
         ok 0.2
         bad 0.33
 
         stat Lcl_Mod_Sharing
-        EXT_SNOOP,agent=this,snoopresponse=hitm / INSTR_RETIRED_ANY
+        "EXT_SNOOP,agent=this,snoopresponse=hitm" / INSTR_RETIRED_ANY
         good 0.05
         ok 0.1
         bad 0.2
 
         stat Fast_Sync_Penalty
-        (L1D_CACHE_LOCK_DURATION + 20 * L1D_CACHE_LOCK,cachestate=m+e+s+i) / CPU_CLK_UNHALTED_CORE
+        (L1D_CACHE_LOCK_DURATION + 20 * "L1D_CACHE_LOCK,cachestate=m+e+s+i") / CPU_CLK_UNHALTED_CORE
         good 0.05
         ok 0.15
         bad 0.33
@@ -452,43 +512,43 @@ cpu INTEL_CORE2
     page Bus_Characterization
     shortcut B
         stat Bus_Utitilization
-        BUS_TRANS_ANY,agent=any,core=all * 2 / CPU_CLK_UNHALTED.BUS
+        "BUS_TRANS_ANY,agent=any,core=all" * 2 / CPU_CLK_UNHALTED.BUS
         good 0.75
         ok 0.85
         bad 0.95
 
         stat Data_Bus_Util
-        BUS_DRDY_CLOCKS,agent=any / (BUS_TRANS_ANY,agent=any,core=all * 2)
+        "BUS_DRDY_CLOCKS,agent=any" / ("BUS_TRANS_ANY,agent=any,core=all" * 2)
         good 0.9
         ok 0.8
         bad 0.6
 
         stat Bus_Not_Ready
-        BUS_BNR_DRV,agent=any * 2 / CPU_CLK_UNHALTED.BUS
+        "BUS_BNR_DRV,agent=any" * 2 / CPU_CLK_UNHALTED.BUS
         good 0.1
         ok 0.2
         bad 0.33
 
         stat Burst_Read_in_Util
-        BUS_TRANS_BRD,agent=this,core=this * 2 / CPU_CLK_UNHALTED.BUS
+        "BUS_TRANS_BRD,agent=this,core=this" * 2 / CPU_CLK_UNHALTED.BUS
         good 0.25
         ok 0.5
         bad 0.75
 
         stat RFO_in_Util
-        BUS_TRANS_RFO,agent=this,core=this * 2 / CPU_CLK_UNHALTED.BUS
+        "BUS_TRANS_RFO,agent=this,core=this" * 2 / CPU_CLK_UNHALTED.BUS
         good 0.1
         ok 0.25
         bad 0.5
 
         stat Dirty_L2_Evict_Rate
-        L2_M_LINES_OUT,core=this,prefetch=both / L2_LINES_IN,core=this,prefetch=both
+        "L2_M_LINES_OUT,core=this,prefetch=both" / "L2_LINES_IN,core=this,prefetch=both"
         good 0.25
         ok 0.5
         bad 0.75
 
         stat Explicit_Write_Back
-        BUS_TRANS_WB,agent=this,core=this * 2 / CPU_CLK_UNHALTED.BUS
+        "BUS_TRANS_WB,agent=this,core=this" * 2 / CPU_CLK_UNHALTED.BUS
         good 0.1
         ok 0.2
         bad 0.33
