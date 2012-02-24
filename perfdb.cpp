@@ -251,6 +251,13 @@ clearHaltedCpus(uint32_t &cpuMask)
 	haltedcpus = 0;
 	size = sizeof(haltedcpus);
 	if (sysctlbyname("machdep.hlt_cpus", &haltedcpus, &size, NULL, 0) < 0) {
+		/* 
+		 * FreeBSD 9 removed machdep.hlt_cpus, so ignore this error
+		 * if we get ENOENT.  If hlt_cpus doesn't exist then we don't
+		 * have to worry about halted CPUs anymore.
+		 */
+		if (errno == ENOENT)
+			return;
 		throw PmcException("Could not get sysctl machdep.hlt_cpus");
 	}
 	cpuMask &= ~haltedcpus;
