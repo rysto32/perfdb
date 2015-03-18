@@ -15,7 +15,7 @@ class UncoreAgent
 private:
     typedef std::vector<UncoreUnit*> UnitMap;
     UnitMap units;
-    
+
     CounterAgent agentType;
 
 public:
@@ -28,7 +28,7 @@ public:
     void UnconfigureCounter(const UncoreCounter &counter);
 
     uint64_t GetCounterValue(int unit, const UncoreCounter & counter);
-    
+
     CounterAgent GetCounterAgent() const;
     int GetNumAgents() const;
 };

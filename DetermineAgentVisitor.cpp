@@ -25,7 +25,7 @@ void DetermineAgentVisitor::visit(PmcExpr &expr)
 
     agentMap[&expr] = pmc.getAgent(expr.getPmc());
 }
-    
+
 CounterAgent DetermineAgentVisitor::GetAgent(Expression & expr)
 {
 

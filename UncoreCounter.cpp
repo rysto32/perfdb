@@ -17,7 +17,7 @@ UncoreCounter::AllocateFor(UncoreEvent & event)
     if (!free)
         return false;
 
-    // Check that this event can be configued in this counter type. 
+    // Check that this event can be configued in this counter type.
     if ((agent_type & event.getCounters()) == 0)
         return false;
 

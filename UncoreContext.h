@@ -33,22 +33,22 @@ private:
 
 	void AddEvent(const UncoreEvent & event);
 	void AllocateCounter(UncoreEvent & ev, UncoreCounter & counter);
-	
+
 	enum CpuType {
 		CPU_TYPE_SANDY_BRIDGE,
 		CPU_TYPE_IVY_BRIDGE,
 		CPU_TYPE_HASWELL,
         CPU_TYPE_UNKNOWN
 	};
-    
+
     static CpuType ProbeCpuType();
-	
+
 	CpuType cpu_type;
-	
+
 public:
 	UncoreContext();
 	~UncoreContext();
-    
+
     CounterAgent getAgent(const std::string & stat);
     int getNumAgents(CounterAgent agent) const;
 
@@ -56,7 +56,7 @@ public:
 	void clearStats();
 
 	uint64_t getStat(const std::string & name) throw (StatNotLoaded);
-	uint64_t getStatCpu(const std::string & name, int cpu) 
+	uint64_t getStatCpu(const std::string & name, int cpu)
 	    throw (StatNotLoaded);
 	void readStats();
 };

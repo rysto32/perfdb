@@ -23,10 +23,10 @@ class StatNotLoaded : public std::exception
 	}
 };
 
-class StatContext 
+class StatContext
 {
 public:
-    
+
     virtual CounterAgent getAgent(const std::string & stat) = 0;
     virtual int getNumAgents(CounterAgent agent) const = 0;
 
@@ -34,7 +34,7 @@ public:
 	virtual void clearStats() = 0;
 
 	virtual uint64_t getStat(const std::string & name) throw (StatNotLoaded) = 0;
-	virtual uint64_t getStatCpu(const std::string & name, int cpu) 
+	virtual uint64_t getStatCpu(const std::string & name, int cpu)
 	    throw (StatNotLoaded) = 0;
 	virtual void readStats() = 0;
 };

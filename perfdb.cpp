@@ -170,7 +170,7 @@ class PerCpuExprEvaluator : public PostOrderExprVisitor
 
 	virtual void visit(ConstExpr &expr)
 	{
-		/* 
+		/*
 		 * Nothing to do because expr.getValue() will already
 		 * return the right value for a ConstExpr
 		 */
@@ -186,7 +186,7 @@ extern YYSTYPE yyval;
 void
 usage(char * exe)
 {
-	fprintf(stderr, "usage: %s [-C -c cpuspec -w rate -f stats_file ]\n", 
+	fprintf(stderr, "usage: %s [-C -c cpuspec -w rate -f stats_file ]\n",
 	    exe);
 }
 
@@ -250,11 +250,11 @@ GetNumCols(StatContext &pmc, PointerVector<Statistic> &stats)
     agent = ANY_AGENT;
     for (it = stats.begin(); it != stats.end(); ++it) {
         Statistic & stat = **it;
-		
+
         stat.getExpr().accept(v);
         agent = CombineAgents(agent, v.GetAgent(stat.getExpr()));
     }
-    
+
     return pmc.getNumAgents(agent);
 }
 
@@ -276,7 +276,7 @@ main(int argc, char **argv)
 	struct tm * timeinfo;
 
     PmcContext fake;
-	
+
 	statsFile += "/stats.txt";
 	try {
 		UncoreContext pmc;
@@ -292,7 +292,7 @@ main(int argc, char **argv)
 			case 'w':
 				rate = strtol(optarg, &endp, 10);
 				if (*endp != '\0') {
-					fprintf(stderr, 
+					fprintf(stderr,
 					    "-w requires numeric argument\n");
 					return (-1);
 				}
@@ -324,14 +324,14 @@ main(int argc, char **argv)
 		yyin = fopen(statsFile.c_str(), "r");
 
 		if (!yyin) {
-			fprintf(stderr, "Could not read %s\n", 
+			fprintf(stderr, "Could not read %s\n",
 			    statsFile.c_str());
 			return (-1);
 		}
 
 		error = yyparse();
 		if (error) {
-			fprintf(stderr, "Could not parse %s\n", 
+			fprintf(stderr, "Could not parse %s\n",
 			    statsFile.c_str());
 			return (-1);
 		}
@@ -355,7 +355,7 @@ main(int argc, char **argv)
 				pmc.readStats();
 				time(&curTime);
 				timeinfo = localtime(&curTime);
-                
+
                 ncols = GetNumCols(pmc, state.ScreenStats());
 
 				move(0, 0);

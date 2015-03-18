@@ -81,20 +81,20 @@ cpu INTEL_HASWELL_XEON
         good 2
         ok 4
         bad 6
-        
+
         stat "PCIe Down (Gb)"
         (R2PCIE.RING_BL_USED.CCW * 32 * 8) / (1024 * 1024 * 1024)
         good 15
         ok 25
         bad 35
-        
+
         stat "PCIe Up (Gb)"
         (R2PCIE.RING_BL_USED.CW * 32 * 8) / (1024 * 1024 * 1024)
         good 15
         ok 25
         bad 35
-        
-    
+
+
     page IMC
     shortcut M
         stat RAM_Read_Util
@@ -134,22 +134,22 @@ cpu INTEL_HASWELL_XEON
         good 0.25
         ok 0.5
         bad 0.75
-        
+
         stat Util_Up
         R2PCIE.RING_BL_USED.CW / R2PCIE.CLOCKTICKS
         good 0.25
         ok 0.5
         bad 0.75
-        
+
         stat "Down BW (Gb)"
         (R2PCIE.RING_BL_USED.CCW * 32 * 8) / (1024 * 1024 * 1024)
         good 15
         ok 25
         bad 35
-        
+
         stat "Up BW (Gb)"
         (R2PCIE.RING_BL_USED.CW * 32 * 8) / (1024 * 1024 * 1024)
         good 15
         ok 25
         bad 35
-        
+

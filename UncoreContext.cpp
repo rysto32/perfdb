@@ -27,14 +27,14 @@ UncoreContext::UncoreContext()
     AddEvent(UncoreEvent("IMC.CAS_COUNT.RD", UNCORE_IMC, 0x4, 0x3));
     AddEvent(UncoreEvent("IMC.CAS_COUNT.WR", UNCORE_IMC, 0x4, 0xC));
     AddEvent(UncoreEvent("IMC.FIXED", UNCORE_IMC_FIXED, 0, 0));
-    
+
     if (cpu_type == CPU_TYPE_HASWELL)
     {
         counters.push_back(UncoreCounter(UNCORE_R2PCIE, 0xD8, 0xA0));
         counters.push_back(UncoreCounter(UNCORE_R2PCIE, 0xDC, 0xA8));
         counters.push_back(UncoreCounter(UNCORE_R2PCIE, 0xE0, 0xB0));
         counters.push_back(UncoreCounter(UNCORE_R2PCIE, 0xE4, 0xB8));
-    
+
         AddEvent(UncoreEvent("R2PCIE.RING_BL_USED.CW", UNCORE_R2PCIE, 0x09, 0x03));
         AddEvent(UncoreEvent("R2PCIE.RING_BL_USED.CCW", UNCORE_R2PCIE, 0x09, 0x0C));
         AddEvent(UncoreEvent("R2PCIE.CLOCKTICKS", UNCORE_R2PCIE, 0x01, 0));
@@ -54,7 +54,7 @@ UncoreContext::UncoreContext()
         imc->AddUnit(255, 16, 0);
         imc->AddUnit(255, 16, 1);
         break;
-    
+
     case CPU_TYPE_IVY_BRIDGE:
         imc->AddUnit(255, 16, 4);
         imc->AddUnit(255, 16, 5);
@@ -67,11 +67,11 @@ UncoreContext::UncoreContext()
         imc->AddUnit(255, 21, 0);
         imc->AddUnit(255, 21, 1);
 
-        imc->AddUnit(255, 23, 0);        
+        imc->AddUnit(255, 23, 0);
         imc->AddUnit(255, 23, 1);
         imc->AddUnit(255, 24, 0);
         imc->AddUnit(255, 24, 1);
-        
+
         pcie->AddUnit(255, 16, 1);
         break;
     }
@@ -108,7 +108,7 @@ UncoreContext::CpuType UncoreContext::ProbeCpuType()
         throw StatException("Error reading from pci device");
 
     uint32_t did = io.pi_data;
-    
+
     switch (did)
     {
     case 0xe008086:
@@ -142,11 +142,11 @@ UncoreContext::getAgent(const std::string & stat)
         msg << "Event '" << stat << "' does not exist";
         throw StatException(msg.str());
     }
-    
+
     uint32_t counters = ev->second.getCounters();
     int shift = ffs(counters) - 1;
     uint32_t agent = (1 << shift);
-    
+
     return agents[agent]->GetCounterAgent();
 }
 
@@ -172,7 +172,7 @@ UncoreContext::loadStat(const std::string & name)
     // If we are already counting this event then there is nothing to do.
     if (allocatedCounters.count(name) != 0)
         return;
-    
+
     EventMap::iterator ev;
 
     ev = events.find(name);
@@ -279,7 +279,7 @@ UncoreContext::getNumAgents(CounterAgent agent) const
     case CBOX_AGENT:
         agentMask = UNCORE_CBOX;
         break;
-    
+
     case ANY_AGENT:
     case NO_AGENT:
         return (0);

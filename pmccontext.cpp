@@ -14,7 +14,7 @@ PmcContext::getPmcInitErrorMessage(int error)
 		message += ": hwpmc module not loaded?";
 		break;
 	case EPROGMISMATCH:
-		message += 
+		message +=
 		  ": libpmc version number does not match hwpmc version number";
 		break;
 	case ENXIO:
@@ -49,8 +49,8 @@ PmcContext::PmcContext()
 	if (error)
 		throw StatException(getPmcInitErrorMessage(errno));
 }
-    
-CounterAgent 
+
+CounterAgent
 PmcContext::getAgent(const std::string & stat)
 {
 
@@ -80,7 +80,7 @@ PmcContext::loadStat(const std::string &name)
 			if (error) {
 				clearCpuMap(it->second);
 				m_pmcs.erase(it);
-				throw StatException(getPmcErrorMessage(name, 
+				throw StatException(getPmcErrorMessage(name,
 				    "pmc_allocate", errno));
 			}
 
@@ -98,7 +98,7 @@ PmcContext::loadStat(const std::string &name)
 			cpuMask &= ~(1 << cpu);
 		}
 
-		/* 
+		/*
 		* Some pmcs start with a non-zero value(e.g. the tsc).  Most
 		* will start at zero. Read the value now so we get a consistent
 		* delta when we go to get the pmc value for the first time.
@@ -127,7 +127,7 @@ PmcContext::clearStats()
 	m_pmcs.clear();
 }
 
-void 
+void
 PmcContext::readStat(const PmcMap::iterator &it)
 {
 	PmcCpuMap::iterator jt;

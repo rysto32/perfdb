@@ -38,7 +38,7 @@ public:
 class IncrementPageAction : public KeyAction {
 private:
 	int increment;
-	
+
 public:
 	IncrementPageAction(int incr);
 	virtual const char *Name();

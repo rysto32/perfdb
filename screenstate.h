@@ -17,7 +17,7 @@ private:
 	typedef std::map<int, KeyAction*> KeyMap;
 	PointerVector<Page> &pageList;
 	KeyMap keyMap;
-	
+
 	unsigned pageIndex;
 	unsigned statIndex;
 	unsigned missedStatIndex;
@@ -25,12 +25,12 @@ private:
 	bool forceUpdate;
 	time_t lastUpdate;
 	int updateRate;
-	
+
 	bool perCpu;
-	
+
 	void SetupShortcuts(StatContext &pmc);
 public:
-	ScreenState(PointerVector<Page> &pages, bool pcpu, StatContext &pmc, 
+	ScreenState(PointerVector<Page> &pages, bool pcpu, StatContext &pmc,
 	    int updateRate);
 	~ScreenState();
 
@@ -39,16 +39,16 @@ public:
 	void MissedStat(int index);
 	void CompleteUpdate(void);
 	bool UpdateScreen() const;
-	
+
 	const char *ScreenName() const;
 	const char *ScreenShortcut() const;
 	PointerVector<Statistic> & ScreenStats();
-	
+
 	bool PerCPU() const
 	{
 		return perCpu;
 	}
-	
+
 	void TogglePerCpu();
 	void ChangePage(StatContext &pmc, int newIndex);
 	void IncrementPage(StatContext &pmc, int increment);

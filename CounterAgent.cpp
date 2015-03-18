@@ -5,7 +5,7 @@ CounterAgent CombineAgents(CounterAgent a, CounterAgent b)
 {
 
     /*
-     * If you combine an ANY_AGENT stat with any other stat, the resulting 
+     * If you combine an ANY_AGENT stat with any other stat, the resulting
      * stat will be counted againt the agent of the other stat.
      */
     if (a == ANY_AGENT)

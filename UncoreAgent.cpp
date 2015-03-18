@@ -17,7 +17,7 @@ UncoreAgent::UncoreAgent(CounterAgent agent)
 UncoreAgent::~UncoreAgent()
 {
     UnitMap::iterator it;
-    
+
     for (it = units.begin(); it != units.end(); ++it) {
         delete *it;
     }
@@ -77,7 +77,7 @@ UncoreAgent::GetCounterValue(int unit, const UncoreCounter & counter)
     return units.at(unit)->GetCounterValue(counter);
 }
 
-    
+
 CounterAgent
 UncoreAgent::GetCounterAgent() const
 {

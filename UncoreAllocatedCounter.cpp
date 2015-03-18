@@ -6,7 +6,7 @@ UncoreAllocatedCounter::UncoreAllocatedCounter(UncoreCounter & cnt, int num_unit
 {
 }
 
-UncoreCounter & 
+UncoreCounter &
 UncoreAllocatedCounter::GetCounter() const
 {
     return counter;

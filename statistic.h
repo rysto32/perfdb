@@ -29,16 +29,16 @@ class Statistic
 public:
 	enum Status { STAT_GOOD = 1, STAT_OK, STAT_BAD, STAT_TERRIBLE };
 
-	Statistic(std::string *n, Expression *e, double good, double ok, 
+	Statistic(std::string *n, Expression *e, double good, double ok,
 	    double bad)
 		: name(n), expr(e), goodThreshold(good), okThreshold(ok),
 		    badThreshold(bad)
 	{
 	}
 
-	Statistic(const std::string &n, Expression *e, double good, double ok, 
+	Statistic(const std::string &n, Expression *e, double good, double ok,
 	    double bad)
-		: name(new std::string(n)), expr(e), goodThreshold(good), 
+		: name(new std::string(n)), expr(e), goodThreshold(good),
 		    okThreshold(ok), badThreshold(bad)
 	{
 	}

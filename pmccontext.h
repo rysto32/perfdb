@@ -30,7 +30,7 @@ class PmcContext : public StatContext
 	int m_cpuMask;
 
 	static std::string getPmcInitErrorMessage(int error);
-	static std::string getPmcErrorMessage(const std::string & event, 
+	static std::string getPmcErrorMessage(const std::string & event,
 	    const char* function, int error);
 
 	void clearCpuMap(PmcCpuMap & map);
@@ -48,7 +48,7 @@ public:
 	{
 		m_cpuMask = cpuMask;
 	}
-    
+
     CounterAgent getAgent(const std::string & stat);
     int getNumAgents(CounterAgent agent) const;
 
@@ -56,7 +56,7 @@ public:
 	void clearStats();
 
 	uint64_t getStat(const std::string & name) throw (StatNotLoaded);
-	uint64_t getStatCpu(const std::string & name, int cpu) 
+	uint64_t getStatCpu(const std::string & name, int cpu)
 	    throw (StatNotLoaded);
 	void readStats();
 

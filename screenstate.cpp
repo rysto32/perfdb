@@ -49,8 +49,8 @@ class InitPmcVisitor : public PostOrderExprVisitor
 		try {
 			m_pmc.loadStat(expr.getPmc());
 		} catch (StatException &e) {
-			/* 
-			 * This is probably because we ran out of PMCs, so 
+			/*
+			 * This is probably because we ran out of PMCs, so
 			 * ignore it.
 			 */
 		}
@@ -61,9 +61,9 @@ class InitPmcVisitor : public PostOrderExprVisitor
 	}
 };
 
-ScreenState::ScreenState(PointerVector<Page> &pages, bool pcpu, 
+ScreenState::ScreenState(PointerVector<Page> &pages, bool pcpu,
     StatContext &pmc, int rate)
-	: pageList(pages), pageIndex(0), statIndex(0), missedStatIndex(0), 
+	: pageList(pages), pageIndex(0), statIndex(0), missedStatIndex(0),
 	  forceUpdate(true), lastUpdate(0), updateRate(rate), perCpu(pcpu)
 {
 	SetupShortcuts(pmc);
@@ -72,19 +72,19 @@ ScreenState::ScreenState(PointerVector<Page> &pages, bool pcpu,
 ScreenState::~ScreenState()
 {
 	KeyMap::iterator it;
-	
+
 	for (it = keyMap.begin(); it != keyMap.end(); ++it)
 		delete it->second;
 }
 
-void 
+void
 ScreenState::SetupShortcuts(StatContext &pmc)
 {
 	PointerVector<Page>::iterator it;
 	Page *page;
 	ChoosePageAction *choosePage;
 	int index;
-	
+
 	keyMap['q'] = new QuitAction;
 	keyMap['C'] = new PerCpuAction;
 	keyMap[KEY_LEFT] = new IncrementPageAction(-1);
@@ -101,7 +101,7 @@ ScreenState::SetupShortcuts(StatContext &pmc)
 			msg += " has shortcut with more than one character(";
 			msg += shortcut.c_str();
 			msg += ")";
-		
+
 			throw StatException(msg);
 		}
 
@@ -145,8 +145,8 @@ ScreenState::WaitForKeypress(StatContext &pmc)
 	}
 	missedStatIndex = 0;
 
-	/* 
-	 * Wait for the next keypress.  If we time out, this will return an 
+	/*
+	 * Wait for the next keypress.  If we time out, this will return an
 	 * error.  In that case, it's time to update the screen again.
 	 */
 	ch = getch();
@@ -154,14 +154,14 @@ ScreenState::WaitForKeypress(StatContext &pmc)
 		forceUpdate = true;
 		return;
 	}
-	
+
 	action = keyMap[ch];
-	
+
 	if (action != NULL)
 		action->Perform(pmc, *this);
 }
 
-void 
+void
 ScreenState::TogglePerCpu()
 {
 	perCpu = !perCpu;
@@ -169,7 +169,7 @@ ScreenState::TogglePerCpu()
 	forceUpdate = true;
 }
 
-void 
+void
 ScreenState::ChangePage(StatContext &pmc, int newIndex)
 {
 	pageIndex = newIndex;
@@ -180,13 +180,13 @@ ScreenState::ChangePage(StatContext &pmc, int newIndex)
 	forceUpdate = true;
 }
 
-void 
+void
 ScreenState::IncrementPage(StatContext &pmc, int increment)
 {
 	int newPage;
-	
+
 	newPage = pageIndex + increment;
-	
+
 	if (newPage >= 0 && newPage < pageList.size())
 		ChangePage(pmc, newPage);
 }
@@ -198,7 +198,7 @@ ScreenState::LoadPage(StatContext &pmc)
 	PointerVector<Statistic>::iterator it;
 	size_t startIndex;
 	size_t index;
-	
+
 	pmc.clearStats();
 	index = 0;
 	for (it = stats.begin(); it != stats.end(); ++it, ++index) {
