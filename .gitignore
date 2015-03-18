@@ -1,8 +1,8 @@
-syntax: glob
 *.o
 *~
 lex.cpp
 parser.cpp
 parser.cpp.h
+parser.h
 perfdb
 .depend
