@@ -43,8 +43,6 @@ UncoreAgent::AddUnit(int bus, int slot, int f)
 
     if (error == 0)
         units.push_back(new UncoreUnit(bus, slot, f));
-    else
-        std::cerr << "Skip unit " << bus << ":" << slot << ":" << f << std::endl;
 
     close(fd);
 }
