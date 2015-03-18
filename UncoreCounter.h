@@ -7,6 +7,7 @@
 
 #define UNCORE_IMC_FIXED	(1 << 0)
 #define UNCORE_IMC		(1 << 1)
+#define UNCORE_R2PCIE   (1 << 2)
 
 class UncoreEvent;
 

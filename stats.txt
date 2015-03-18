@@ -1,582 +1,129 @@
-cpu INTEL_ATOM
-    page Front_End
-    shortcut F
-        stat CPI
-        "unhalted-cycles" / instructions
-        good 0.5
-        ok 1
-        bad 2.0
 
-        stat Branch_Mispredicts
-        "branch-mispredicts" / branches
-        good 0.05
-        ok 0.15
-        bad 0.25
-
-cpu INTEL_CORE
-    page Front_End
-    shortcut F
-        stat CPI
-        cycles / instructions
-        good 0.5
-        ok 1
-        bad 2.0
-
-        stat Branch_Mispredicts
-        "branch-mispredicts" / branches
-        good 0.05
-        ok 0.15
-        bad 0.25
-
-cpu AMD_K6
-    page Front_End
-    shortcut F
-        stat CPI
-        cycles / instructions
-        good 0.5
-        ok 1
-        bad 2.0
-
-        stat Branch_Mispredicts
-        "branch-mispredicts" / branches
-        good 0.05
-        ok 0.15
-        bad 0.25
-
-cpu AMD_K7
-    page Front_End
-    shortcut F
-        stat CPI
-        "unhalted-cycles" / instructions
-        good 0.5
-        ok 1
-        bad 2.0
-
-        stat Branch_Mispredicts
-        "branch-mispredicts" / branches
-        good 0.05
-        ok 0.15
-        bad 0.25
-
-cpu INTEL_PIV
-    page Front_End
-    shortcut F
-        stat CPI
-        "unhalted-cycles" / instructions
-        good 0.5
-        ok 1
-        bad 2.0
-
-        stat Branch_Mispredicts
-        "branch-mispredicts" / branches
-        good 0.05
-        ok 0.15
-        bad 0.25
-
-cpu INTEL_P5
-    page Front_End
-    shortcut F
-        stat CPI
-        "unhalted-cycles" / instructions
-        good 0.5
-        ok 1
-        bad 2.0
-
-cpu INTEL_P6
-    page Front_End
-    shortcut F
-        stat CPI
-        "unhalted-cycles" / instructions
-        good 0.5
-        ok 1
-        bad 2.0
-
-        stat Branch_Mispredicts
-        "branch-mispredicts" / branches
-        good 0.05
-        ok 0.15
-        bad 0.25
-
-cpu INTEL_COREI7
-    page Front_End
-    shortcut F
-        stat CPI
-        CPU_CLK_UNHALTED_CORE / instructions
-        good 0.5
-        ok 1
-        bad 2.0
-
-        stat Branch_Mispredicts
-        BR_MISP_EXEC.ANY / BR_INST_RETIRED.ALL_BRANCHES
-        good 0.05
-        ok 0.15
-        bad 0.25
-
-    page "Memory Channel Utilization"
-    shortcut m
-        stat GQ_Write_Nonempty
-        GQ_CYCLES_NOT_EMPTY.WRITE_TRACKER / UCLOCK
-        good 0.25
-        ok 0.5
-        bad 0.75
-        
-        stat GQ_To_L3_Busy
-        GQ_DATA.TO_L3 / UCLOCK
-        good 0.25
-        ok 0.5
-        bad 0.75
-        
-        stat GQ_To_QPI_Busy
-        GQ_DATA.TO_QPI_QMC / UCLOCK
-        good 0.25
-        ok 0.5
-        bad 0.75
-        
-        stat GQ_To_Core_Busy
-        GQ_DATA.TO_CORES / UCLOCK
-        good 0.25
-        ok 0.5
-        bad 0.75
-
-        stat Chan0_Util_Write
-        QMC_BUSY.WRITE.CH0 / UCLOCK
-        good 0.25
-        ok 0.5
-        bad 0.75
-
-        stat Chan0_Util_Read
-        QMC_BUSY.READ.CH0 / UCLOCK
-        good 0.25
-        ok 0.5
-        bad 0.75
-        
-        stat Chan1_Util_Write
-        QMC_BUSY.WRITE.CH1 / UCLOCK
-        good 0.25
-        ok 0.5
-        bad 0.75
-
-        stat Chan1_Util_Read
-        QMC_BUSY.READ.CH1 / UCLOCK
-        good 0.25
-        ok 0.5
-        bad 0.75
-        
-        stat Chan2_Util_Write
-        QMC_BUSY.WRITE.CH2 / UCLOCK
-        good 0.25
-        ok 0.5
-        bad 0.75
-
-        stat Chan2_Util_Read
-        QMC_BUSY.READ.CH2 / UCLOCK
-        good 0.25
-        ok 0.5
-        bad 0.75
-
-cpu INTEL_CORE2
-    page Front_End
-    shortcut F
-        stat CPI
-        CPU_CLK_UNHALTED_CORE / INSTR_RETIRED_ANY
-        good 0.5
-        ok 1
-        bad 2.0
-
-        stat RS_Full
-        RESOURCE_STALLS.RS_FULL / CPU_CLK_UNHALTED_CORE
-        good 0.8
-        ok 0.5
-        bad 0.25
-
-        stat ROB_Full
-        RESOURCE_STALLS.ROB_FULL / CPU_CLK_UNHALTED_CORE
-        good 0.8
-        ok 0.5
-        bad 0.25
-
-        stat LD_ST_Full
-        RESOURCE_STALLS.LD_ST / CPU_CLK_UNHALTED_CORE
-        good 0.8
-        ok 0.5
-        bad 0.25
-
-    page Code_Locality
-    shortcut l
-        stat IFetch_Stall
-        CYCLES_L1I_MEM_STALLED / CPU_CLK_UNHALTED_CORE
-        good 0.1
-        ok 0.25
-        bad 0.5
-
-        stat ITLB_Miss
-        ITLB_MISS_RETIRED / INSTR_RETIRED_ANY
-        good 0.05
-        ok 0.1
-        bad 0.3
-
-        stat L1I_Miss
-        L1I_MISSES / INSTR_RETIRED_ANY
-        good 0.2
-        ok 0.4
-        bad 0.75
-
-        stat L2I_Miss
-        "L2_IFETCH,core=this,cachestate=i" / INSTR_RETIRED_ANY
-        good 0.001
-        ok 0.1
-        bad 0.25
-
-    page Branch_FrontEnd
-    shortcut R
-        stat BACLEAR
-        7 * BACLEARS / CPU_CLK_UNHALTED_CORE
-        good 0.25
-        ok 0.75
-        bad 1.5
-
-        stat Taken_Bubble
-        (BR_TKN_BUBBLE_1 + BR_TKN_BUBBLE_2) / CPU_CLK_UNHALTED_CORE
-        good 0.25
-        ok 0.75
-        bad 1.5
-
-    page Branch_Prediction
-    shortcut b
-        stat Mispredictions
-        BR_INST_RETIRED.MISPRED / BR_INST_RETIRED.ANY
-        good 0.05
-        ok 0.15
-        bad 0.25
-
-        stat Mispredict_Impact
-        RESOURCE_STALLS.BR_MISS_CLEAR / CPU_CLK_UNHALTED_CORE
-        good 0.1
-        ok 0.25
-        bad 0.5
-
-        stat Mispredict_Per_Uop
-        BR_INST_RETIRED.MISPRED / UOPS_RETIRED.ANY
-        good 0.01
-        ok 0.05
-        bad 0.10
-
-        stat Indirect_Percent
-        BR_IND_CALL_EXEC / BR_INST_RETIRED.ANY
-        good 0.1
-        ok 0.25
-        bad 0.5
-
-        stat Ind_Miss_Percent
-        BR_CALL_MISSP_EXEC / BR_INST_RETIRED.MISPRED
-        good 0.25
-        ok 0.5
-        bad 0.75
-
-        stat Return_Mispredict
-        BR_RET_MISSP_EXEC / BR_RET_EXEC
-        good 0.1
-        ok 0.25
-        bad 0.5
-
-    page Resource_Stalls
-    shortcut r
-        stat ROB_Read
-        RAT_STALLS.ROB_READ_PORT / CPU_CLK_UNHALTED_CORE
-        good 0.05
-        ok 0.15
-        bad 0.30
-
-        stat Partial_Register
-        RAT_STALLS.PARTIAL_CYCLES / CPU_CLK_UNHALTED_CORE
-        good 0.05
-        ok 0.15
-        bad 0.30
-
-        stat Partial_Flag
-        RAT_STALLS.FLAGS / CPU_CLK_UNHALTED_CORE
-        good 0.05
-        ok 0.15
-        bad 0.30
-
-    page Domain_Bypass
-    shortcut d
-        stat Bypass_to_FP
-        DELAYED_BYPASS.FP / CPU_CLK_UNHALTED_CORE
-        good 0.05
-        ok 0.15
-        bad 0.30
-
-        stat Bypass_to_SIMD
-        DELAYED_BYPASS.SIMD / CPU_CLK_UNHALTED_CORE
-        good 0.05
-        ok 0.15
-        bad 0.30
-
-        stat Bypass_to_Load
-        DELAYED_BYPASS.LOAD / CPU_CLK_UNHALTED_CORE
-        good 0.05
-        ok 0.15
-        bad 0.30
-
-    page Floating_Point_Performance
-    shortcut f
-        stat FP_Ratio
-        X87_OPS_RETIRED.ANY / INSTR_RETIRED_ANY
-        good 0.1
-        ok 0.25
-        bad 0.5
-
-        stat FP_Assist_Impact
-        FP_ASSIST * 80 / CPU_CLK_UNHALTED_CORE
-        good 0.01
-        ok 0.5
-        bad 0.1
-
-        stat Divider_Busy
-        IDLE_DURING_DIV / CPU_CLK_UNHALTED_CORE
-        good 0.05
-        ok 0.15
-        bad 0.30
-
-        stat FPCW_Stall
-        RESOURCE_STALLS.FPCW / CPU_CLK_UNHALTED_CORE
-        good 0.05
-        ok 0.15
-        bad 0.30
-
-    page Memory_Access_Conflicts
-    shortcut m
-        stat Load_Rate
-        "L1D_CACHE_LD,cachestate=m+e+s+i" / CPU_CLK_UNHALTED_CORE
-        good 0.1
-        ok 0.20
-        bad 0.33
-
-        stat Store_Order_Block
-        STORE_BLOCK.ORDER / CPU_CLK_UNHALTED_CORE
-        good 0.1
-        ok 0.20
-        bad 0.33
-
-        stat Store_Forward_Block
-        LOAD_BLOCK_OVERLAP_STORE / CPU_CLK_UNHALTED_CORE
-        good 0.1
-        ok 0.2
-        bad 0.33
-
-        stat Ld_Blocked_Unknown_Addr
-        LOAD_BLOCK.STA / CPU_CLK_UNHALTED_CORE
-        good 0.05
-        ok 0.15
-        bad 0.25
-
-        stat Ld_Blocked_Unknown_Data
-        LOAD_BLOCK.STD / CPU_CLK_UNHALTED_CORE
-        good 0.05
-        ok 0.15
-        bad 0.25
-
-    page Cache
-    shortcut c
-        stat L1D_Misses_Insn
-        L1D_REPL / INSTR_RETIRED.ANY
-        good 0.01
-        ok 0.1
-        bad 0.25
-
-        stat L1D_Miss_Rate
-        L1D_REPL / L1D_ALL_CACHE_REF
-        good 0.1
-        ok 0.25
-        bad 0.5
-
-        stat L2D_Misses_Insn
-        "L2_LINES_IN,core=this,prefetch=both" / INSTR_RETIRED_ANY
-        good 0.01
-        ok 0.05
-        bad 0.1
-
-        stat L2D_Miss_Rate
-        "L2_LINES_IN,core=this,prefetch=both" / L1D_REPL
-        good 0.01
-        ok 0.1
-        bad 0.25
-
-        stat L2D_Demand_Miss
-        "L2_LINES_IN,core=this,prefetch=exclude" / INSTR_RETIRED_ANY
-        good 0.01
-        ok 0.05
-        bad 0.1
-
-        stat L2D_Demand_Miss_Rate
-        "L2_LINES_IN,core=this,prefetch=exclude" / L1D_REPL
-        good 0.01
-        ok 0.1
-        bad 0.25
-
-    page Prefetching
-    shortcut p
-        stat Useful_Prefetch_L1
-        SSE_PRE_MISS.L1 / SSE_PRE_EXEC.L1
-        good 0.75
-        ok 0.5
-        bad 0.25
-
-        stat Late_Prefetch_L1
-        LOAD_HIT_PRE / SSE_PRE_EXEC.L1
-        good 0.05
-        ok 0.1
-        bad 0.25
-
-        stat Useful_Prefetch_L2
-        SSE_PRE_MISS.L2 / SSE_PRE_EXEC.L2
-        good 0.75
-        ok 0.5
-        bad 0.25
-
-        stat Late_Prefetch_L2
-        LOAD_HIT_PRE / SSE_PRE_EXEC.L2
-        good 0.05
-        ok 0.1
-        bad 0.25
-
-        stat Useful_Prefetch_NTA
-        SSE_PRE_MISS.NTA / SSE_PRE_EXEC.NTA
-        good 0.75
-        ok 0.5
-        bad 0.25
-
-        stat Late_Prefetch_NTA
-        LOAD_HIT_PRE / SSE_PRE_EXEC.NTA
-        good 0.05
-        ok 0.1
-        bad 0.25
-
-    page Data_TLB
-    shortcut t
-        stat TLB_Miss_Penalty
-        PAGE_WALKS.CYCLES / CPU_CLK_UNHALTED_CORE
-        good 0.05
-        ok 0.15
-        bad 0.25
-
-        stat L0_TLB_Miss_Ld
-        DTLB_MISSES.L0_MISS_LD * 2 / CPU_CLK_UNHALTED_CORE
-        good 0.05
-        ok 0.10
-        bad 0.25
-
-        stat DTLB_Miss_Rate
-        DTLB_MISSES.MISS_LD / L1D_ALL_REF
-        good 0.01
-        ok 0.05
-        bad 0.15
-
-        stat DTLB_Ld_Miss_Rate
-        DTLB_MISSES.MISS_LD / L1D_CACHE_LD
-        good 0.01
-        ok 0.05
-        bad 0.15
-
-        stat DTLB_St_Miss_Rate
-        DTLB_MISSES.MISS_LD / "L1D_CACHE_ST,cachestate=m+e+s+i"
-        good 0.01
-        ok 0.05
-        bad 0.15
-
-    page Multicore_Memory_Interaction
-    shortcut i
-        stat Mod_Sharing
-        "EXT_SNOOP,agent=any,snoopresponse=hitm" / INSTR_RETIRED_ANY
-        good 0.1
-        ok 0.2
-        bad 0.33
-
-        stat Lcl_Mod_Sharing
-        "EXT_SNOOP,agent=this,snoopresponse=hitm" / INSTR_RETIRED_ANY
-        good 0.05
-        ok 0.1
-        bad 0.2
-
-        stat Fast_Sync_Penalty
-        (L1D_CACHE_LOCK_DURATION + 20 * "L1D_CACHE_LOCK,cachestate=m+e+s+i") / CPU_CLK_UNHALTED_CORE
-        good 0.05
-        ok 0.15
-        bad 0.33
-
-        stat St_Blocked_By_Snoop
-        STORE_BLOCK.SNOOP / CPU_CLK_UNHALTED_CORE
-        good 0.05
-        ok 0.15
-        bad 0.33
-
-    page Bus_Characterization
-    shortcut B
-        stat Bus_Utitilization
-        "BUS_TRANS_ANY,agent=any,core=all" * 2 / CPU_CLK_UNHALTED.BUS
-        good 0.75
-        ok 0.85
-        bad 0.95
-
-        stat Data_Bus_Util
-        "BUS_DRDY_CLOCKS,agent=any" / ("BUS_TRANS_ANY,agent=any,core=all" * 2)
-        good 0.9
-        ok 0.8
-        bad 0.6
-
-        stat Bus_Not_Ready
-        "BUS_BNR_DRV,agent=any" * 2 / CPU_CLK_UNHALTED.BUS
-        good 0.1
-        ok 0.2
-        bad 0.33
-
-        stat Burst_Read_in_Util
-        "BUS_TRANS_BRD,agent=this,core=this" * 2 / CPU_CLK_UNHALTED.BUS
-        good 0.25
-        ok 0.5
-        bad 0.75
-
-        stat RFO_in_Util
-        "BUS_TRANS_RFO,agent=this,core=this" * 2 / CPU_CLK_UNHALTED.BUS
-        good 0.1
-        ok 0.25
-        bad 0.5
-
-        stat Dirty_L2_Evict_Rate
-        "L2_M_LINES_OUT,core=this,prefetch=both" / "L2_LINES_IN,core=this,prefetch=both"
-        good 0.25
-        ok 0.5
-        bad 0.75
-
-        stat Explicit_Write_Back
-        "BUS_TRANS_WB,agent=this,core=this" * 2 / CPU_CLK_UNHALTED.BUS
-        good 0.1
-        ok 0.2
-        bad 0.33
-
-    page Misc
+cpu INTEL_SANDYBRIDGE_XEON
+    page IMC
     shortcut M
-        stat ESP_Sync
-        ESP.SYNCH / ESP.ADDITIONS
-        good 0.1
-        ok 0.2
-        bad 0.5
-
-        stat Macro_Fusion
-        UOPS_RETIRED.MACRO_FUSION / INSTR_RETIRED_ANY
+        stat RAM_Read_Util
+        IMC.RPQ_CYCLES_NE / IMC.FIXED
         good 0.25
-        ok 0.1
-        bad 0.05
+        ok 0.5
+        bad 0.75
 
-        stat LCP_Stalls
-        ILD_STALL / CPU_CLK_UNHALTED_CORE
-        good 0.01
-        ok 0.1
-        bad 0.25
+        stat RAM_Write_Util
+        IMC.WPQ_CYCLES_NE / IMC.FIXED
+        good 0.25
+        ok 0.5
+        bad 0.75
 
-        stat SMC_Nukes
-        MACHINE_NUKES.SMC * 150 / CPU_CLK_UNHALTED_CORE
-        good 0.01
-        ok 0.05
-        bad 0.1
+        stat "Read_BW (GB)"
+        64 * IMC.CAS_COUNT.RD / (1024 * 1024 * 1024)
+        good 5
+        ok 10
+        bad 15
+
+        stat "Write_BW (GB)"
+        64 * IMC.CAS_COUNT.WR / (1024 * 1024 * 1024)
+        good 2
+        ok 4
+        bad 6
+
+        stat "BW (GB)"
+        64 * (IMC.CAS_COUNT.RD + IMC.CAS_COUNT.WR) / (1024 * 1024 * 1024)
+        good 2
+        ok 4
+        bad 6
+
+
+cpu INTEL_IVYBRIDGE_XEON
+    page IMC
+    shortcut M
+        stat RAM_Read_Util
+        IMC.RPQ_CYCLES_NE / IMC.FIXED
+        good 0.25
+        ok 0.5
+        bad 0.75
+
+        stat RAM_Write_Util
+        IMC.WPQ_CYCLES_NE / IMC.FIXED
+        good 0.25
+        ok 0.5
+        bad 0.75
+
+        stat "Read_BW (Gb)"
+        8 * 64 * IMC.CAS_COUNT.RD / (1024 * 1024 * 1024)
+        good 5
+        ok 10
+        bad 15
+
+        stat "Write_BW (Gb)"
+        8 * 64 * IMC.CAS_COUNT.WR / (1024 * 1024 * 1024)
+        good 2
+        ok 4
+        bad 6
+
+        stat "BW (Gb)"
+        8 * 64 * (IMC.CAS_COUNT.RD + IMC.CAS_COUNT.WR) / (1024 * 1024 * 1024)
+        good 2
+        ok 4
+        bad 6
+
+
+cpu INTEL_HASWELL_XEON
+    page IMC
+    shortcut M
+        stat RAM_Read_Util
+        IMC.RPQ_CYCLES_NE / IMC.FIXED
+        good 0.25
+        ok 0.5
+        bad 0.75
+
+        stat RAM_Write_Util
+        IMC.WPQ_CYCLES_NE / IMC.FIXED
+        good 0.25
+        ok 0.5
+        bad 0.75
+
+        stat "Read_BW (Gb)"
+        8 * 64 * IMC.CAS_COUNT.RD / (1024 * 1024 * 1024)
+        good 5
+        ok 10
+        bad 15
+
+        stat "Write_BW (Gb)"
+        8 * 64 * IMC.CAS_COUNT.WR / (1024 * 1024 * 1024)
+        good 2
+        ok 4
+        bad 6
+
+        stat "BW (Gb)"
+        8 * 64 * (IMC.CAS_COUNT.RD + IMC.CAS_COUNT.WR) / (1024 * 1024 * 1024)
+        good 2
+        ok 4
+        bad 6
+
+cpu INTEL_HASWELL
+    page R2PCIe
+    shortcut P
+        stat Util_Down
+        R2PCIE.RING_BL_USED.CCW / R2PCIE.CLOCKTICKS
+        good 0.25
+        ok 0.5
+        bad 0.75
+        
+        stat Util_Up
+        R2PCIE.RING_BL_USED.CW / R2PCIE.CLOCKTICKS
+        good 0.25
+        ok 0.5
+        bad 0.75
+        
+        stat "Down BW (Gb)"
+        (R2PCIE.RING_BL_USED.CCW * 32 * 8) / (1024 * 1024 * 1024)
+        good 15
+        ok 25
+        bad 35
+        
+        stat "Up BW (Gb)"
+        (R2PCIE.RING_BL_USED.CW * 32 * 8) / (1024 * 1024 * 1024)
+        good 15
+        ok 25
+        bad 35
+        

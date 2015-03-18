@@ -18,6 +18,8 @@ UncoreAgent::AddUnit(int num, int bus, int slot, int f)
     units.insert(std::pair<int, UncoreUnit*>(num, new UncoreUnit(num, bus, slot, f)));
 }
 
+#include <iostream>
+
 void
 UncoreAgent::ConfigureCounter(const UncoreCounter & counter, const UncoreEvent & ev)
 {
@@ -41,6 +43,6 @@ UncoreAgent::UnconfigureCounter(const UncoreCounter &counter)
 uint64_t
 UncoreAgent::GetCounterValue(int unit, const UncoreCounter & counter)
 {
-    return units[unit]->GetCounterValue(counter);
+    return units.at(unit)->GetCounterValue(counter);
 }
 

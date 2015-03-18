@@ -158,8 +158,6 @@ UncoreUnit::GetCounterValue(const UncoreCounter & counter)
 
     ThawCounters();
 
-    fprintf(stderr, "Read %#lx:%#x from %#x\n", high, low, counter.GetCtrOffset());
-
     return (high << 32) | low;
 }
 

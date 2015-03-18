@@ -26,13 +26,22 @@ private:
 	typedef std::map<std::string, UncoreEvent> EventMap;
 	EventMap events;
 
-    typedef std::map<int, UncoreAgent*> AgentMap;
-    AgentMap agents;
+	typedef std::map<int, UncoreAgent*> AgentMap;
+	AgentMap agents;
 
-    PointerVector<UncoreAgent> agentsList;
+	PointerVector<UncoreAgent> agentsList;
 
 	void AddEvent(const UncoreEvent & event);
-    void AllocateCounter(UncoreEvent & ev, UncoreCounter & counter);
+	void AllocateCounter(UncoreEvent & ev, UncoreCounter & counter);
+	
+	enum CpuType {
+		CPU_TYPE_SANDY_BRIDGE,
+		CPU_TYPE_IVY_BRIDGE,
+		CPU_TYPE_HASWELL,
+        CPU_TYPE_UNKNOWN
+	};
+	
+	CpuType cpu_type;
 	
 public:
 	UncoreContext();

@@ -13,16 +13,16 @@ cpu INTEL_IVYBRIDGE_XEON
         ok 0.5
         bad 0.75
 
-        stat Read_Pct
-        IMC.CAS_COUNT.RD / (IMC.CAS_COUNT.RD + IMC.CAS_COUNT.WR)
-        good 0.25
-        ok 0.5
-        bad 0.75
+#        stat Read_Pct
+#        IMC.CAS_COUNT.RD / (IMC.CAS_COUNT.RD + IMC.CAS_COUNT.WR)
+#        good 0.25
+#        ok 0.5
+#        bad 0.75
 
-        stat Write_Pct
-        IMC.CAS_COUNT.WR / (IMC.CAS_COUNT.RD + IMC.CAS_COUNT.WR)
-        good 0.25
-        ok 0.5
-        bad 0.75
+#        stat Write_Pct
+#        IMC.CAS_COUNT.WR / (IMC.CAS_COUNT.RD + IMC.CAS_COUNT.WR)
+#        good 0.25
+#        ok 0.5
+#        bad 0.75
 
 

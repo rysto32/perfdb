@@ -44,7 +44,7 @@ public:
 		cbreak();
 		noecho();
 		keypad(stdscr, TRUE);
-		halfdelay(rate * 10);
+		halfdelay(10);
 
 		if (has_colors()) {
 			start_color();
@@ -177,6 +177,7 @@ class PerCpuExprEvaluator : public PostOrderExprVisitor
 };
 
 extern FILE *yyin;
+FILE *logfd;
 int yyparse();
 extern int yydebug;
 extern YYSTYPE yyval;
@@ -270,11 +271,16 @@ main(int argc, char **argv)
 	int rate = 1;
 	int error;
 	int ncpu;
-	bool perCpu = false;
+	bool perCpu = true;
 	int option;
 	char *endp;
 	uint32_t cpuMask;
 	std::string statsFile(dirname(argv[0]));
+
+	bool logToFile = false;
+	std::string logFile(dirname(argv[0]));
+	time_t curTime;
+	struct tm * timeinfo;
 
     PmcContext fake;
 	
@@ -288,10 +294,10 @@ main(int argc, char **argv)
 		if (ncpu > 1)
 			clearHaltedCpus(cpuMask);
 
-		while ((option = getopt(argc, argv, "Cc:w:hf:")) != -1) {
+		while ((option = getopt(argc, argv, "Cc:w:hf:l:")) != -1) {
 			switch (option) {
 			case 'C':
-				perCpu = true;
+				perCpu = !perCpu;
 				break;
 			case 'c':
 				cpuMask = parseCpuMask(optarg, ncpu);
@@ -307,6 +313,10 @@ main(int argc, char **argv)
 			case 'f':
 				statsFile = optarg;
 				break;
+			case 'l':
+				logToFile = true;
+				logFile = optarg;
+				break;
 			case 'h':
 			default:
 				usage(argv[0]);
@@ -315,6 +325,14 @@ main(int argc, char **argv)
 		}
 
 		//pmc.setCpuMask(cpuMask);
+
+		if (logToFile) {
+			logfd = fopen(logFile.c_str(), "a");
+			if (!logfd) {
+				fprintf(stderr, "Unable to open log file.\n");
+				return(-1);
+			}
+		}
 
 		yyin = fopen(statsFile.c_str(), "r");
 
@@ -348,6 +366,8 @@ main(int argc, char **argv)
 
 			if (state.UpdateScreen()) {
 				pmc.readStats();
+				time(&curTime);
+				timeinfo = localtime(&curTime);
 
 				move(0, 0);
 				printw("%s: (hotkey %s)", state.ScreenName(),
@@ -362,6 +382,7 @@ main(int argc, char **argv)
 					}
 				}
 				row++;
+				if (logToFile) fprintf(logfd, "%s", asctime(timeinfo));
 
 				PointerVector<Statistic>::iterator it;
 				PointerVector<Statistic> &stats = state.ScreenStats();
@@ -372,6 +393,7 @@ main(int argc, char **argv)
 
 					move(row, 0);
 					printw("%s: ", stat.getName().c_str());
+					if (logToFile) fprintf(logfd, "%15s:\t", stat.getName().c_str());
 
 					if (state.PerCPU()) {
 						for (int cpu = 0; cpu < ncpu; cpu++) {
@@ -392,15 +414,18 @@ main(int argc, char **argv)
 								curses.startColor(status);
 								attron(A_BOLD);
 								printw(" %.2lf\n", value);
+								if (logToFile) fprintf(logfd, " %.2lf\t", value);
 								attroff(A_BOLD);
 								curses.endColor(status);
 							} catch (StatNotLoaded & e) {
 								printw(" N/A");
+								if (logToFile) fprintf(logfd, " N/A");
 							}
 						}
 					} else {
 						ExprEvaluator eval(pmc);
 						move(row, HEADER_WIDTH);
+						if (logToFile) fprintf(logfd, "\n");
 
 						try {
 							double value;
@@ -416,16 +441,23 @@ main(int argc, char **argv)
 							curses.startColor(status);
 							attron(A_BOLD);
 							printw("%.2lf\n", value);
+							if (logToFile) fprintf(logfd, "%.2lf\n", value);
 							attroff(A_BOLD);
 							curses.endColor(status);
 						} catch(StatNotLoaded & e) {
 							printw("Not Available");
+							if (logToFile) fprintf(logfd, "Not Available");
 						}
 					}
+					if (logToFile) fprintf(logfd, "\n");
 				}
 
 				refresh();
 				state.CompleteUpdate();
+				if (logToFile) {
+					fprintf(logfd, "\n");
+					fflush(logfd);
+				}
 			}
 		}
 	}

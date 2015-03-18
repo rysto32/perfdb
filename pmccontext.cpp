@@ -46,8 +46,8 @@ PmcContext::PmcContext()
 {
 	int error = pmc_init();
 
-	if (error)
-		throw StatException(getPmcInitErrorMessage(errno));
+	/*if (error)
+		throw StatException(getPmcInitErrorMessage(errno));*/
 }
 
 void

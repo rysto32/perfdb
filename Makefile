@@ -26,7 +26,7 @@ lex.cpp: lex.ll
 
 beforedepend: lex.cpp parser.cpp
 
-CFLAGS+=-I. -I${.CURDIR}
+CFLAGS+=-I. -I${.CURDIR} -g
 
 .include <bsd.prog.mk>
 
