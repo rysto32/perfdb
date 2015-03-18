@@ -6,10 +6,10 @@
 
 class ValidatePmcVisitor : public PostOrderExprVisitor
 {
-	PmcContext &m_pmc;
+	StatContext &m_pmc;
 
 	public:
-	ValidatePmcVisitor(PmcContext &pmc)
+	ValidatePmcVisitor(StatContext &pmc)
 	    : m_pmc(pmc)
 	{
 	}
@@ -20,8 +20,8 @@ class ValidatePmcVisitor : public PostOrderExprVisitor
 
 	virtual void visit(PmcExpr &expr)
 	{
-		m_pmc.loadPmc(expr.getPmc());
-		m_pmc.clearPmcs();
+		m_pmc.loadStat(expr.getPmc());
+		m_pmc.clearStats();
 	}
 
 	virtual void visit(ConstExpr &expr)
@@ -31,10 +31,10 @@ class ValidatePmcVisitor : public PostOrderExprVisitor
 
 class InitPmcVisitor : public PostOrderExprVisitor
 {
-	PmcContext &m_pmc;
+	StatContext &m_pmc;
 
 	public:
-	InitPmcVisitor(PmcContext &pmc)
+	InitPmcVisitor(StatContext &pmc)
 	    : m_pmc(pmc)
 	{
 	}
@@ -46,8 +46,8 @@ class InitPmcVisitor : public PostOrderExprVisitor
 	virtual void visit(PmcExpr &expr)
 	{
 		try {
-			m_pmc.loadPmc(expr.getPmc());
-		} catch (PmcException &e) {
+			m_pmc.loadStat(expr.getPmc());
+		} catch (StatException &e) {
 			/* 
 			 * This is probably because we ran out of PMCs, so 
 			 * ignore it.
@@ -61,7 +61,7 @@ class InitPmcVisitor : public PostOrderExprVisitor
 };
 
 ScreenState::ScreenState(PointerVector<Page> &pages, bool pcpu, 
-    PmcContext &pmc, int rate)
+    StatContext &pmc, int rate)
 	: pageList(pages), pageIndex(0), statIndex(0), missedStatIndex(0), 
 	  forceUpdate(true), lastUpdate(0), updateRate(rate), perCpu(pcpu)
 {
@@ -77,7 +77,7 @@ ScreenState::~ScreenState()
 }
 
 void 
-ScreenState::SetupShortcuts(PmcContext &pmc)
+ScreenState::SetupShortcuts(StatContext &pmc)
 {
 	PointerVector<Page>::iterator it;
 	Page *page;
@@ -101,7 +101,7 @@ ScreenState::SetupShortcuts(PmcContext &pmc)
 			msg += shortcut.c_str();
 			msg += ")";
 		
-			throw PmcException(msg);
+			throw StatException(msg);
 		}
 
 		char c = shortcut[0];
@@ -119,7 +119,7 @@ ScreenState::SetupShortcuts(PmcContext &pmc)
 			msg += c;
 			msg += ", but that is already used by ";
 			msg += inserted.first->second->Name();
-			throw PmcException(msg);
+			throw StatException(msg);
 		}
 
 		ValidatePmcVisitor validate(pmc);
@@ -133,7 +133,7 @@ ScreenState::SetupShortcuts(PmcContext &pmc)
 }
 
 void
-ScreenState::WaitForKeypress(PmcContext &pmc)
+ScreenState::WaitForKeypress(StatContext &pmc)
 {
 	KeyAction *action;
 	int ch;
@@ -169,7 +169,7 @@ ScreenState::TogglePerCpu()
 }
 
 void 
-ScreenState::ChangePage(PmcContext &pmc, int newIndex)
+ScreenState::ChangePage(StatContext &pmc, int newIndex)
 {
 	pageIndex = newIndex;
 	statIndex = 0;
@@ -180,7 +180,7 @@ ScreenState::ChangePage(PmcContext &pmc, int newIndex)
 }
 
 void 
-ScreenState::IncrementPage(PmcContext &pmc, int increment)
+ScreenState::IncrementPage(StatContext &pmc, int increment)
 {
 	int newPage;
 	
@@ -191,14 +191,14 @@ ScreenState::IncrementPage(PmcContext &pmc, int increment)
 }
 
 void
-ScreenState::LoadPage(PmcContext &pmc)
+ScreenState::LoadPage(StatContext &pmc)
 {
 	PointerVector<Statistic> &stats = ScreenStats();
 	PointerVector<Statistic>::iterator it;
 	size_t startIndex;
 	size_t index;
 	
-	pmc.clearPmcs();
+	pmc.clearStats();
 	index = 0;
 	for (it = stats.begin(); it != stats.end(); ++it, ++index) {
 		if (index >= statIndex) {

@@ -47,11 +47,11 @@ PmcContext::PmcContext()
 	int error = pmc_init();
 
 	if (error)
-		throw PmcException(getPmcInitErrorMessage(errno));
+		throw StatException(getPmcInitErrorMessage(errno));
 }
 
 void
-PmcContext::loadPmc(const std::string &name)
+PmcContext::loadStat(const std::string &name)
 {
 	PmcMap::iterator it;
 	pmc_id_t pmcId;
@@ -73,7 +73,7 @@ PmcContext::loadPmc(const std::string &name)
 			if (error) {
 				clearCpuMap(it->second);
 				m_pmcs.erase(it);
-				throw PmcException(getPmcErrorMessage(name, 
+				throw StatException(getPmcErrorMessage(name, 
 				    "pmc_allocate", errno));
 			}
 
@@ -82,7 +82,7 @@ PmcContext::loadPmc(const std::string &name)
 			if (error) {
 				clearCpuMap(it->second);
 				m_pmcs.erase(it);
-				throw PmcException(getPmcErrorMessage(name,
+				throw StatException(getPmcErrorMessage(name,
 				    "pmc_start", errno));
 			}
 
@@ -96,7 +96,7 @@ PmcContext::loadPmc(const std::string &name)
 		* will start at zero. Read the value now so we get a consistent
 		* delta when we go to get the pmc value for the first time.
 		*/
-		readPmc(it);
+		readStat(it);
 	}
 }
 
@@ -111,7 +111,7 @@ PmcContext::clearCpuMap(PmcCpuMap &map)
 }
 
 void
-PmcContext::clearPmcs()
+PmcContext::clearStats()
 {
 	PmcMap::iterator it;
 
@@ -121,7 +121,7 @@ PmcContext::clearPmcs()
 }
 
 void 
-PmcContext::readPmc(const PmcMap::iterator &it)
+PmcContext::readStat(const PmcMap::iterator &it)
 {
 	PmcCpuMap::iterator jt;
 
@@ -135,23 +135,23 @@ PmcContext::readPmc(const PmcMap::iterator &it)
 }
 
 void
-PmcContext::readPmcs()
+PmcContext::readStats()
 {
 	PmcMap::iterator it;
 
 	for (it = m_pmcs.begin(); it != m_pmcs.end(); ++it)
-		readPmc(it);
+		readStat(it);
 }
 
 
-pmc_value_t
-PmcContext::getPmc(const std::string &name) throw (PmcNotLoaded)
+uint64_t
+PmcContext::getStat(const std::string &name) throw (StatNotLoaded)
 {
 	pmc_value_t total;
 	PmcMap::iterator it = m_pmcs.find(name);
 
 	if(it == m_pmcs.end())
-		throw PmcNotLoaded();
+		throw StatNotLoaded();
 
 	total = 0;
 	PmcCpuMap::iterator jt;
@@ -162,13 +162,13 @@ PmcContext::getPmc(const std::string &name) throw (PmcNotLoaded)
 }
 
 
-pmc_value_t
-PmcContext::getPmcCpu(const std::string &name, int cpu) throw (PmcNotLoaded)
+uint64_t
+PmcContext::getStatCpu(const std::string &name, int cpu) throw (StatNotLoaded)
 {
 	PmcMap::iterator it = m_pmcs.find(name);
 
 	if(it == m_pmcs.end())
-		throw PmcNotLoaded();
+		throw StatNotLoaded();
 
 	PmcCpuMap::iterator jt = it->second.find(cpu);
 
@@ -177,4 +177,12 @@ PmcContext::getPmcCpu(const std::string &name, int cpu) throw (PmcNotLoaded)
 
 	return (jt->second.m_value);
 }
+
+int
+PmcContext::getNumUnits() const
+{
+
+    return (pmc_ncpu());
+}
+
 

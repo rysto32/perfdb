@@ -19,6 +19,7 @@
 #include "cpu.h"
 #include "screenstate.h"
 #include "parser.cpp.h"
+#include "UncoreContext.h"
 
 bool quit = 0;
 
@@ -80,10 +81,10 @@ public:
 
 class ExprEvaluator : public PostOrderExprVisitor
 {
-	PmcContext &m_pmc;
+	StatContext &m_pmc;
 
 	public:
-	ExprEvaluator(PmcContext &pmc)
+	ExprEvaluator(StatContext &pmc)
 	    : m_pmc(pmc)
 	{
 	}
@@ -116,7 +117,7 @@ class ExprEvaluator : public PostOrderExprVisitor
 
 	virtual void visit(PmcExpr &expr)
 	{
-		expr.setValue(m_pmc.getPmc(expr.getPmc()));
+		expr.setValue(m_pmc.getStat(expr.getPmc()));
 	}
 
 	virtual void visit(ConstExpr &expr)
@@ -126,11 +127,11 @@ class ExprEvaluator : public PostOrderExprVisitor
 
 class PerCpuExprEvaluator : public PostOrderExprVisitor
 {
-	PmcContext & m_pmc;
+	StatContext & m_pmc;
 	int m_cpu;
 
 	public:
-	PerCpuExprEvaluator(PmcContext &pmc, int cpu)
+	PerCpuExprEvaluator(StatContext &pmc, int cpu)
 	    : m_pmc(pmc), m_cpu(cpu)
 	{
 	}
@@ -163,7 +164,7 @@ class PerCpuExprEvaluator : public PostOrderExprVisitor
 
 	virtual void visit(PmcExpr &expr)
 	{
-		expr.setValue(m_pmc.getPmcCpu(expr.getPmc(), m_cpu));
+		expr.setValue(m_pmc.getStatCpu(expr.getPmc(), m_cpu));
 	}
 
 	virtual void visit(ConstExpr &expr)
@@ -198,12 +199,12 @@ parseCpuMask(char * optarg, int ncpu)
 		cpu = strtol(optarg, &endp, 10);
 
 		if (*endp != ',' && *endp != '\0') {
-			throw PmcException(
+			throw StatException(
 			    "Invalid character in cpuspec passed to -c option");
 		}
 
 		if (cpu < 0 || cpu >= ncpu) {
-			throw PmcException(
+			throw StatException(
 			   "Invalid cpu number in cpuspec passed to -c option");
 		}
 
@@ -227,7 +228,7 @@ getPageList(PointerVector<CpuDef> & cpuDefs)
 	if (error) {
 		std::string msg("error in pmc_cpuinfo: ");
 		msg += strerror(errno);
-		throw PmcException(msg);
+		throw StatException(msg);
 	}
 
 	cpuName = pmc_name_of_cputype(cpuInfo->pm_cputype);
@@ -239,7 +240,7 @@ getPageList(PointerVector<CpuDef> & cpuDefs)
 
 	std::string msg("No definitions for CPU type ");
 	msg += cpuName;
-	throw PmcException(msg);
+	throw StatException(msg);
 }
 
 static void
@@ -258,7 +259,7 @@ clearHaltedCpus(uint32_t &cpuMask)
 		 */
 		if (errno == ENOENT)
 			return;
-		throw PmcException("Could not get sysctl machdep.hlt_cpus");
+		throw StatException("Could not get sysctl machdep.hlt_cpus");
 	}
 	cpuMask &= ~haltedcpus;
 }
@@ -274,12 +275,14 @@ main(int argc, char **argv)
 	char *endp;
 	uint32_t cpuMask;
 	std::string statsFile(dirname(argv[0]));
+
+    PmcContext fake;
 	
 	statsFile += "/stats.txt";
 	try {
-		PmcContext pmc;
+		UncoreContext pmc;
 
-		ncpu = pmc_ncpu();
+		ncpu = pmc.getNumUnits();
 		cpuMask = (1 << ncpu) - 1;
 
 		if (ncpu > 1)
@@ -311,7 +314,7 @@ main(int argc, char **argv)
 			}
 		}
 
-		pmc.setCpuMask(cpuMask);
+		//pmc.setCpuMask(cpuMask);
 
 		yyin = fopen(statsFile.c_str(), "r");
 
@@ -344,7 +347,7 @@ main(int argc, char **argv)
 			state.WaitForKeypress(pmc);
 
 			if (state.UpdateScreen()) {
-				pmc.readPmcs();
+				pmc.readStats();
 
 				move(0, 0);
 				printw("%s: (hotkey %s)", state.ScreenName(),
@@ -355,7 +358,7 @@ main(int argc, char **argv)
 				if (state.PerCPU()) {
 					for (i = 0; i < ncpu; i++) {
 						move(row, HEADER_WIDTH + STAT_WIDTH * i);
-						printw("CPU%d", i);
+						printw("CH%d", i);
 					}
 				}
 				row++;
@@ -381,7 +384,7 @@ main(int argc, char **argv)
 									expr.accept(eval);
 									value = expr.getValue();
 									stat.setLastValue(value, cpu);
-								} catch (PmcNotLoaded & e) {
+								} catch (StatNotLoaded & e) {
 									state.MissedStat(row - statsRowsStart);
 									value = stat.getLastValue(cpu);
 								}
@@ -391,7 +394,7 @@ main(int argc, char **argv)
 								printw(" %.2lf\n", value);
 								attroff(A_BOLD);
 								curses.endColor(status);
-							} catch (PmcNotLoaded & e) {
+							} catch (StatNotLoaded & e) {
 								printw(" N/A");
 							}
 						}
@@ -405,7 +408,7 @@ main(int argc, char **argv)
 								expr.accept(eval);
 								value = expr.getValue();
 								stat.setLastValue(value);
-							} catch (PmcNotLoaded & e) {
+							} catch (StatNotLoaded & e) {
 								state.MissedStat(row - statsRowsStart);
 								value = stat.getLastValue();
 							}
@@ -415,7 +418,7 @@ main(int argc, char **argv)
 							printw("%.2lf\n", value);
 							attroff(A_BOLD);
 							curses.endColor(status);
-						} catch(PmcNotLoaded & e) {
+						} catch(StatNotLoaded & e) {
 							printw("Not Available");
 						}
 					}
@@ -426,7 +429,7 @@ main(int argc, char **argv)
 			}
 		}
 	}
-	catch (PmcException & e)
+	catch (StatException & e)
 	{
 		fprintf(stderr, "%s\n", e.what());
 		return -1;

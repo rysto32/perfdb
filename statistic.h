@@ -6,7 +6,6 @@
 #include <map>
 
 #include "expression.h"
-#include "pmccontext.h"
 
 class Statistic
 {
@@ -87,7 +86,7 @@ public:
 		std::map<int, double>::iterator it = cachedValues.find(cpu);
 
 		if(it == cachedValues.end())
-			throw PmcNotLoaded();
+			throw StatNotLoaded();
 
 		return (it->second);
 	}

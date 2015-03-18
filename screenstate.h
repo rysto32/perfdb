@@ -10,6 +10,7 @@
 extern bool quit;
 
 class KeyAction;
+class StatContext;
 
 class ScreenState {
 private:
@@ -27,14 +28,14 @@ private:
 	
 	bool perCpu;
 	
-	void SetupShortcuts(PmcContext &pmc);
+	void SetupShortcuts(StatContext &pmc);
 public:
-	ScreenState(PointerVector<Page> &pages, bool pcpu, PmcContext &pmc, 
+	ScreenState(PointerVector<Page> &pages, bool pcpu, StatContext &pmc, 
 	    int updateRate);
 	~ScreenState();
 
-	void LoadPage(PmcContext &pmc);
-	void WaitForKeypress(PmcContext &pmc);
+	void LoadPage(StatContext &pmc);
+	void WaitForKeypress(StatContext &pmc);
 	void MissedStat(int index);
 	void CompleteUpdate(void);
 	bool UpdateScreen() const;
@@ -49,8 +50,8 @@ public:
 	}
 	
 	void TogglePerCpu();
-	void ChangePage(PmcContext &pmc, int newIndex);
-	void IncrementPage(PmcContext &pmc, int increment);
+	void ChangePage(StatContext &pmc, int newIndex);
+	void IncrementPage(StatContext &pmc, int increment);
 };
 
 #endif

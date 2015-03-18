@@ -3,22 +3,24 @@
 
 #include "screenstate.h"
 
+class StatContext;
+
 class KeyAction {
 public:
 	virtual const char *Name() = 0;
-	virtual void Perform(PmcContext &pmc, ScreenState &state) = 0;
+	virtual void Perform(StatContext &pmc, ScreenState &state) = 0;
 };
 
 class QuitAction : public KeyAction {
 public:
 	virtual const char *Name();
-	virtual void Perform(PmcContext &pmc, ScreenState &state);
+	virtual void Perform(StatContext &pmc, ScreenState &state);
 };
 
 class PerCpuAction : public KeyAction {
 public:
 	virtual const char *Name();
-	virtual void Perform(PmcContext &pmc, ScreenState &state);
+	virtual void Perform(StatContext &pmc, ScreenState &state);
 };
 
 class ChoosePageAction : public KeyAction {
@@ -29,7 +31,7 @@ private:
 public:
 	ChoosePageAction(int index, const std::string &pageName);
 	virtual const char *Name();
-	virtual void Perform(PmcContext &pmc, ScreenState &state);
+	virtual void Perform(StatContext &pmc, ScreenState &state);
 };
 
 class IncrementPageAction : public KeyAction {
@@ -39,7 +41,7 @@ private:
 public:
 	IncrementPageAction(int incr);
 	virtual const char *Name();
-	virtual void Perform(PmcContext &pmc, ScreenState &state);
+	virtual void Perform(StatContext &pmc, ScreenState &state);
 };
 
 #endif

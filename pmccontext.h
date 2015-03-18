@@ -3,34 +3,18 @@
 
 #include <map>
 #include <string>
-#include <stdexcept>
 
 #include <pmc.h>
 
-class PmcException : public std::runtime_error
-{
-	public:
-	PmcException(const std::string &msg)
-	  : std::runtime_error(msg)
-	{
-	}
-};
+#include "StatContext.h"
 
-class PmcNotLoaded : public std::exception
-{
-	const char *what() const throw ()
-	{
-		return "pmc not loaded";
-	}
-};
-
-class PmcContext
+class PmcContext : public StatContext
 {
 	struct Pmc
 	{
 		pmc_id_t m_id;
-		pmc_value_t m_lastAbsolute;
-		pmc_value_t m_value;
+		uint64_t m_lastAbsolute;
+		uint64_t m_value;
 
 		Pmc(pmc_id_t id)
 		    : m_id(id), m_lastAbsolute(0)
@@ -50,13 +34,13 @@ class PmcContext
 
 	void clearCpuMap(PmcCpuMap & map);
 
-	void readPmc(const PmcMap::iterator & it);
+	void readStat(const PmcMap::iterator & it);
 public:
 	PmcContext();
 
 	~PmcContext()
 	{
-		clearPmcs();
+		clearStats();
 	}
 
 	void setCpuMask(int cpuMask)
@@ -64,13 +48,15 @@ public:
 		m_cpuMask = cpuMask;
 	}
 
-	void loadPmc(const std::string & name);
-	void clearPmcs();
+	void loadStat(const std::string & name);
+	void clearStats();
 
-	pmc_value_t getPmc(const std::string & name) throw (PmcNotLoaded);
-	pmc_value_t getPmcCpu(const std::string & name, int cpu) 
-	    throw (PmcNotLoaded);
-	void readPmcs();
+	uint64_t getStat(const std::string & name) throw (StatNotLoaded);
+	uint64_t getStatCpu(const std::string & name, int cpu) 
+	    throw (StatNotLoaded);
+	void readStats();
+
+	int getNumUnits() const;
 };
 
 #endif

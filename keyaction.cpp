@@ -8,7 +8,7 @@ QuitAction::Name()
 }
 
 void
-QuitAction::Perform(PmcContext &pmc, ScreenState &state)
+QuitAction::Perform(StatContext &pmc, ScreenState &state)
 {
 	quit = true;
 }
@@ -20,7 +20,7 @@ PerCpuAction::Name()
 }
 
 void
-PerCpuAction::Perform(PmcContext &pmc, ScreenState &state)
+PerCpuAction::Perform(StatContext &pmc, ScreenState &state)
 {
 	state.TogglePerCpu();
 }
@@ -38,7 +38,7 @@ ChoosePageAction::Name()
 }
 
 void
-ChoosePageAction::Perform(PmcContext &pmc, ScreenState &state)
+ChoosePageAction::Perform(StatContext &pmc, ScreenState &state)
 {
 	state.ChangePage(pmc, pageIndex);
 }
@@ -55,7 +55,7 @@ IncrementPageAction::Name()
 }
 
 void
-IncrementPageAction::Perform(PmcContext &pmc, ScreenState &state)
+IncrementPageAction::Perform(StatContext &pmc, ScreenState &state)
 {
 	state.IncrementPage(pmc, increment);
 }

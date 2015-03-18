@@ -1,0 +1,28 @@
+cpu INTEL_IVYBRIDGE_XEON
+    page Front_End
+    shortcut F
+        stat RAM_Read_Util
+	IMC.RPQ_CYCLES_NE / IMC.FIXED
+        good 0.25
+        ok 0.5
+        bad 0.75
+
+        stat RAM_Write_Util
+        IMC.WPQ_CYCLES_NE / IMC.FIXED
+        good 0.25
+        ok 0.5
+        bad 0.75
+
+        stat Read_Pct
+        IMC.CAS_COUNT.RD / (IMC.CAS_COUNT.RD + IMC.CAS_COUNT.WR)
+        good 0.25
+        ok 0.5
+        bad 0.75
+
+        stat Write_Pct
+        IMC.CAS_COUNT.WR / (IMC.CAS_COUNT.RD + IMC.CAS_COUNT.WR)
+        good 0.25
+        ok 0.5
+        bad 0.75
+
+
