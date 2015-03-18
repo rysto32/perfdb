@@ -18,7 +18,7 @@
 #include "page.h"
 #include "cpu.h"
 #include "screenstate.h"
-#include "parser.cpp.h"
+#include "parser.h"
 #include "UncoreContext.h"
 
 bool quit = 0;

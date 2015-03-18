@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 
+#include <sys/types.h>
 #include <pmc.h>
 
 #include "StatContext.h"

@@ -14,7 +14,7 @@ class StatContext;
 
 class ScreenState {
 private:
-	typedef std::map<char, KeyAction*> KeyMap;
+	typedef std::map<int, KeyAction*> KeyMap;
 	PointerVector<Page> &pageList;
 	KeyMap keyMap;
 	

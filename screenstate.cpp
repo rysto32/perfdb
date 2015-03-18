@@ -1,5 +1,6 @@
 
 #include <curses.h>
+#include <time.h>
 
 #include "screenstate.h"
 #include "keyaction.h"

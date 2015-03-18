@@ -7,6 +7,7 @@ class StatContext;
 
 class KeyAction {
 public:
+	virtual ~KeyAction() {}
 	virtual const char *Name() = 0;
 	virtual void Perform(StatContext &pmc, ScreenState &state) = 0;
 };
