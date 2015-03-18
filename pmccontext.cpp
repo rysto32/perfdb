@@ -46,8 +46,15 @@ PmcContext::PmcContext()
 {
 	int error = pmc_init();
 
-	/*if (error)
-		throw StatException(getPmcInitErrorMessage(errno));*/
+	if (error)
+		throw StatException(getPmcInitErrorMessage(errno));
+}
+    
+CounterAgent 
+PmcContext::getAgent(const std::string & stat)
+{
+
+    return (CPU_CORE_AGENT);
 }
 
 void
@@ -179,10 +186,12 @@ PmcContext::getStatCpu(const std::string &name, int cpu) throw (StatNotLoaded)
 }
 
 int
-PmcContext::getNumUnits() const
+PmcContext::getNumAgents(CounterAgent agent) const
 {
-
-    return (pmc_ncpu());
+    if (agent == CPU_CORE_AGENT)
+        return (pmc_ncpu());
+    else
+        return (0);
 }
 
 

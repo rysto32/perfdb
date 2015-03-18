@@ -4,6 +4,8 @@
 #include <stdexcept>
 #include <string>
 
+#include "CounterAgent.h"
+
 class StatException : public std::runtime_error
 {
 	public:
@@ -24,6 +26,9 @@ class StatNotLoaded : public std::exception
 class StatContext 
 {
 public:
+    
+    virtual CounterAgent getAgent(const std::string & stat) = 0;
+    virtual int getNumAgents(CounterAgent agent) const = 0;
 
 	virtual void loadStat(const std::string & name) = 0;
 	virtual void clearStats() = 0;
@@ -32,8 +37,6 @@ public:
 	virtual uint64_t getStatCpu(const std::string & name, int cpu) 
 	    throw (StatNotLoaded) = 0;
 	virtual void readStats() = 0;
-
-	virtual int getNumUnits() const = 0;
 };
 
 #endif

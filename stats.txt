@@ -68,6 +68,33 @@ cpu INTEL_IVYBRIDGE_XEON
 
 
 cpu INTEL_HASWELL_XEON
+    page Summary
+    shortcut S
+        stat "RAM Rd (Gb)"
+        8 * 64 * IMC.CAS_COUNT.RD / (1024 * 1024 * 1024)
+        good 5
+        ok 10
+        bad 15
+
+        stat "RAM Wr (Gb)"
+        8 * 64 * IMC.CAS_COUNT.WR / (1024 * 1024 * 1024)
+        good 2
+        ok 4
+        bad 6
+        
+        stat "PCIe Down (Gb)"
+        (R2PCIE.RING_BL_USED.CCW * 32 * 8) / (1024 * 1024 * 1024)
+        good 15
+        ok 25
+        bad 35
+        
+        stat "PCIe Up (Gb)"
+        (R2PCIE.RING_BL_USED.CW * 32 * 8) / (1024 * 1024 * 1024)
+        good 15
+        ok 25
+        bad 35
+        
+    
     page IMC
     shortcut M
         stat RAM_Read_Util
@@ -100,7 +127,6 @@ cpu INTEL_HASWELL_XEON
         ok 4
         bad 6
 
-cpu INTEL_HASWELL
     page R2PCIe
     shortcut P
         stat Util_Down

@@ -11,7 +11,6 @@ class UncoreEvent;
 class UncoreUnit
 {
 private:
-    const int m_unitNum;
     const int m_bus;
     const int m_slot;
     const int m_func;
@@ -46,7 +45,7 @@ private:
     UncoreUnit & operator=(const UncoreUnit &);
 
 public:
-    UncoreUnit(int num, int bus, int slot, int f);
+    UncoreUnit(int bus, int slot, int f);
     ~UncoreUnit();
 
     int GetUnitNum() const;

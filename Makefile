@@ -1,5 +1,7 @@
 PROG_CXX=perfdb
 SRCS := \
+	CounterAgent.cpp \
+	DetermineAgentVisitor.cpp \
 	lex.cpp \
 	parser.cpp \
 	perfdb.cpp \
@@ -19,14 +21,19 @@ LDADD=-lpmc -lncurses
 MAN=
 
 parser.cpp parser.cpp.h: parser.yy
-	yacc -i -d -o parser.cpp parser.yy
+	yacc -d -o parser.cpp parser.yy
 
-lex.cpp: lex.ll
+parser.h: parser.cpp
+	cp parser.cpp.h parser.h
+
+lex.cpp: lex.ll parser.h
 	lex -olex.cpp lex.ll
 
 beforedepend: lex.cpp parser.cpp
 
 CFLAGS+=-I. -I${.CURDIR} -g
+
+#WARNS ?= 3
 
 .include <bsd.prog.mk>
 

@@ -11,8 +11,8 @@
 #include <sys/pciio.h>
 
 
-UncoreUnit::UncoreUnit(int num, int b, int s, int f)
-    : m_unitNum(num), m_bus(b), m_slot(s), m_func(f)
+UncoreUnit::UncoreUnit(int b, int s, int f)
+    : m_bus(b), m_slot(s), m_func(f)
 {
 
     m_pci_fd = open("/dev/pci", O_RDWR);
@@ -114,12 +114,6 @@ UncoreUnit::ThawCounters()
 {
     //SetMsrBit(U_MSR_PMON_GLOBAL_CTL, MSR_PMON_UNFRZ_ALL);
     WritePci(PMON_BOX_CTL, PMON_BOX_CTL_RSV);
-}
-
-int
-UncoreUnit::GetUnitNum() const
-{
-    return m_unitNum;
 }
 
 void

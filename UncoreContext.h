@@ -40,12 +40,17 @@ private:
 		CPU_TYPE_HASWELL,
         CPU_TYPE_UNKNOWN
 	};
+    
+    static CpuType ProbeCpuType();
 	
 	CpuType cpu_type;
 	
 public:
 	UncoreContext();
 	~UncoreContext();
+    
+    CounterAgent getAgent(const std::string & stat);
+    int getNumAgents(CounterAgent agent) const;
 
 	void loadStat(const std::string & name);
 	void clearStats();
@@ -54,8 +59,6 @@ public:
 	uint64_t getStatCpu(const std::string & name, int cpu) 
 	    throw (StatNotLoaded);
 	void readStats();
-
-	int getNumUnits() const;
 };
 
 #endif

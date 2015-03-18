@@ -48,6 +48,9 @@ public:
 	{
 		m_cpuMask = cpuMask;
 	}
+    
+    CounterAgent getAgent(const std::string & stat);
+    int getNumAgents(CounterAgent agent) const;
 
 	void loadStat(const std::string & name);
 	void clearStats();

@@ -6,6 +6,8 @@
 #include "pointervector.h"
 #include "cpu.h"
 #include "parser.h"
+
+static void yyunput(int, char *) __unused;
 %}
 
 %option noyywrap

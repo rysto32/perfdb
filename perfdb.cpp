@@ -11,6 +11,7 @@
 
 #include <curses.h>
 
+#include "DetermineAgentVisitor.h"
 #include "expression.h"
 #include "pmccontext.h"
 #include "statistic.h"
@@ -190,7 +191,7 @@ usage(char * exe)
 }
 
 int
-parseCpuMask(char * optarg, int ncpu)
+parseCpuMask(char * optarg)
 {
 	int cpu;
 	int cpuMask = 0;
@@ -202,11 +203,6 @@ parseCpuMask(char * optarg, int ncpu)
 		if (*endp != ',' && *endp != '\0') {
 			throw StatException(
 			    "Invalid character in cpuspec passed to -c option");
-		}
-
-		if (cpu < 0 || cpu >= ncpu) {
-			throw StatException(
-			   "Invalid cpu number in cpuspec passed to -c option");
 		}
 
 		cpuMask |= (1 << cpu);
@@ -244,25 +240,22 @@ getPageList(PointerVector<CpuDef> & cpuDefs)
 	throw StatException(msg);
 }
 
-static void
-clearHaltedCpus(uint32_t &cpuMask)
+int
+GetNumCols(StatContext &pmc, PointerVector<Statistic> &stats)
 {
-	uint32_t haltedcpus;
-	size_t size;
-	
-	haltedcpus = 0;
-	size = sizeof(haltedcpus);
-	if (sysctlbyname("machdep.hlt_cpus", &haltedcpus, &size, NULL, 0) < 0) {
-		/* 
-		 * FreeBSD 9 removed machdep.hlt_cpus, so ignore this error
-		 * if we get ENOENT.  If hlt_cpus doesn't exist then we don't
-		 * have to worry about halted CPUs anymore.
-		 */
-		if (errno == ENOENT)
-			return;
-		throw StatException("Could not get sysctl machdep.hlt_cpus");
-	}
-	cpuMask &= ~haltedcpus;
+    CounterAgent agent;
+    DetermineAgentVisitor v(pmc);
+
+    PointerVector<Statistic>::iterator it;
+    agent = ANY_AGENT;
+    for (it = stats.begin(); it != stats.end(); ++it) {
+        Statistic & stat = **it;
+		
+        stat.getExpr().accept(v);
+        agent = CombineAgents(agent, v.GetAgent(stat.getExpr()));
+    }
+    
+    return pmc.getNumAgents(agent);
 }
 
 int
@@ -270,7 +263,7 @@ main(int argc, char **argv)
 {
 	int rate = 1;
 	int error;
-	int ncpu;
+	int ncols;
 	bool perCpu = true;
 	int option;
 	char *endp;
@@ -288,19 +281,13 @@ main(int argc, char **argv)
 	try {
 		UncoreContext pmc;
 
-		ncpu = pmc.getNumUnits();
-		cpuMask = (1 << ncpu) - 1;
-
-		if (ncpu > 1)
-			clearHaltedCpus(cpuMask);
-
 		while ((option = getopt(argc, argv, "Cc:w:hf:l:")) != -1) {
 			switch (option) {
 			case 'C':
 				perCpu = !perCpu;
 				break;
 			case 'c':
-				cpuMask = parseCpuMask(optarg, ncpu);
+				cpuMask = parseCpuMask(optarg);
 				break;
 			case 'w':
 				rate = strtol(optarg, &endp, 10);
@@ -368,6 +355,8 @@ main(int argc, char **argv)
 				pmc.readStats();
 				time(&curTime);
 				timeinfo = localtime(&curTime);
+                
+                ncols = GetNumCols(pmc, state.ScreenStats());
 
 				move(0, 0);
 				printw("%s: (hotkey %s)", state.ScreenName(),
@@ -375,8 +364,8 @@ main(int argc, char **argv)
 
 				int row = 1;
 				int i;
-				if (state.PerCPU()) {
-					for (i = 0; i < ncpu; i++) {
+				if (state.PerCPU() && ncols > 0) {
+					for (i = 0; i < ncols; i++) {
 						move(row, HEADER_WIDTH + STAT_WIDTH * i);
 						printw("CH%d", i);
 					}
@@ -395,8 +384,8 @@ main(int argc, char **argv)
 					printw("%s: ", stat.getName().c_str());
 					if (logToFile) fprintf(logfd, "%15s:\t", stat.getName().c_str());
 
-					if (state.PerCPU()) {
-						for (int cpu = 0; cpu < ncpu; cpu++) {
+					if (state.PerCPU() && ncols > 0) {
+						for (int cpu = 0; cpu < ncols; cpu++) {
 							PerCpuExprEvaluator eval(pmc, cpu);
 							move(row, HEADER_WIDTH + STAT_WIDTH * cpu - 1);
 
