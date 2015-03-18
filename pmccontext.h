@@ -5,6 +5,7 @@
 #include <string>
 #include <stdexcept>
 
+#include <sys/types.h>
 #include <pmc.h>
 
 class PmcException : public std::runtime_error

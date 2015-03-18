@@ -5,7 +5,7 @@
 #include "page.h"
 #include "pointervector.h"
 #include "cpu.h"
-#include "parser.cpp.h"
+#include "parser.h"
 %}
 
 %option noyywrap

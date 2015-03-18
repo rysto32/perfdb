@@ -5,6 +5,7 @@
 
 class KeyAction {
 public:
+	virtual ~KeyAction() {}
 	virtual const char *Name() = 0;
 	virtual void Perform(PmcContext &pmc, ScreenState &state) = 0;
 };
