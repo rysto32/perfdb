@@ -8,7 +8,10 @@
 #define UNCORE_IMC_FIXED	(1 << 0)
 #define UNCORE_IMC		(1 << 1)
 #define UNCORE_R2PCIE	(1 << 2)
-#define UNCORE_CBOX		(1 << 3)
+#define UNCORE_CBOX0	(1 << 3)
+#define UNCORE_CBOXN	(1 << 4)
+
+#define UNCORE_CBOX_ANY (UNCORE_CBOX0 | UNCORE_CBOXN)
 
 class UncoreEvent;
 

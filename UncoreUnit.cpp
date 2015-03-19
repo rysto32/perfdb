@@ -10,16 +10,8 @@
 #include <sys/cpuctl.h>
 #include <sys/pciio.h>
 
-
-UncoreUnit::UncoreUnit(int b, int s, int f)
-    : m_bus(b), m_slot(s), m_func(f)
+UncoreUnit::UncoreUnit()
 {
-
-    m_pci_fd = open("/dev/pci", O_RDWR);
-
-    if (m_pci_fd < 0)
-        throw StatException("Could not open /dev/pci");
-
     m_msr_fd = open("/dev/cpuctl0", O_RDWR);
 
     if (m_msr_fd < 0)
@@ -28,63 +20,7 @@ UncoreUnit::UncoreUnit(int b, int s, int f)
 
 UncoreUnit::~UncoreUnit()
 {
-    close(m_pci_fd);
-}
-
-void
-UncoreUnit::FillPciIo(struct pci_io & io, int bus, int slot, int func, uint32_t reg)
-{
-
-    io.pi_sel.pc_domain = 0;
-    io.pi_sel.pc_bus = bus;
-    io.pi_sel.pc_dev = slot;
-    io.pi_sel.pc_func = func;
-
-    io.pi_reg = reg;
-    io.pi_width = 4;
-}
-
-uint32_t
-UncoreUnit::ReadPci(uint32_t reg)
-{
-    return ReadPci(m_bus, m_slot, m_func, reg);
-}
-
-uint32_t
-UncoreUnit::ReadPci(int bus, int slot, int func, uint32_t reg)
-{
-    struct pci_io io;
-    int error;
-
-    FillPciIo(io, bus, slot, func, reg);
-
-    error = ioctl(m_pci_fd, PCIOCREAD, &io);
-
-    if (error)
-        throw StatException("Error reading from pci device");
-
-    return io.pi_data;
-}
-
-void
-UncoreUnit::WritePci(uint32_t reg, uint32_t val)
-{
-    WritePci(m_bus, m_slot, m_func, reg, val);
-}
-
-void
-UncoreUnit::WritePci(int bus, int slot, int func, uint32_t reg, uint32_t val)
-{
-    struct pci_io io;
-    int error;
-
-    FillPciIo(io, bus, slot, func, reg);
-    io.pi_data = val;
-
-    error = ioctl(m_pci_fd, PCIOCWRITE, &io);
-
-    if (error)
-        throw StatException("Error writing to pci device");
+    close(m_msr_fd);
 }
 
 void
@@ -103,56 +39,47 @@ UncoreUnit::SetMsrBit(uint32_t msr, uint32_t bit)
 }
 
 void
-UncoreUnit::FreezeCounters()
+UncoreUnit::ClearMsrBit(uint32_t msr, uint32_t bit)
 {
-    //SetMsrBit(U_MSR_PMON_GLOBAL_CTL, MSR_PMON_FRZ_ALL);
-    WritePci(PMON_BOX_CTL, PMON_BOX_CTL_RSV | PMON_BOX_CTL_FRZ);
+    cpuctl_msr_args_t args;
+    int error;
+
+    args.msr = msr;
+    args.data = bit;
+
+    error = ioctl(m_msr_fd, CPUCTL_MSRCBIT, &args);
+
+    if (error)
+        throw StatException("Error writing to MSR");
 }
 
 void
-UncoreUnit::ThawCounters()
+UncoreUnit::WriteMsr(uint32_t msr, uint64_t data)
 {
-    //SetMsrBit(U_MSR_PMON_GLOBAL_CTL, MSR_PMON_UNFRZ_ALL);
-    WritePci(PMON_BOX_CTL, PMON_BOX_CTL_RSV);
-}
+    cpuctl_msr_args_t args;
+    int error;
 
-void
-UncoreUnit::ConfigureCounter(const UncoreCounter & counter, const UncoreEvent & ev)
-{
-    FreezeCounters();
+    args.msr = msr;
+    args.data = data;
 
-    uint32_t ctl;
+    error = ioctl(m_msr_fd, CPUCTL_WRMSR, &args);
 
-    ctl  = PMON_CTL_EN | PMON_CTL_RESET;
-    ctl |= ev.GetUmask() << PMON_CTL_UMASK_SHIFT;
-    ctl |= ev.GetCode() << PMON_CTL_EV_SEL_SHIFT;
-
-    WritePci(counter.GetCtlOffset(), ctl);
-
-    ThawCounters();
-}
-
-void
-UncoreUnit::UnconfigureCounter(const UncoreCounter &counter)
-{
-
-    // Clear the enable bit and reset the counter
-    WritePci(counter.GetCtlOffset(), PMON_CTL_RESET);
+    if (error)
+        throw StatException("Error writing to MSR");
 }
 
 uint64_t
-UncoreUnit::GetCounterValue(const UncoreCounter & counter)
+UncoreUnit::ReadMsr(uint32_t msr)
 {
-    FreezeCounters();
-    uint32_t low;
-    uint64_t high;
+    cpuctl_msr_args_t args;
+    int error;
 
-    low = ReadPci(counter.GetCtrOffset());
-    high = ReadPci(counter.GetCtrOffset() + 4);
+    args.msr = msr;
 
-    ThawCounters();
+    error = ioctl(m_msr_fd, CPUCTL_RDMSR, &args);
 
-    return (high << 32) | low;
+    if (error)
+        throw StatException("Error writing to MSR");
+
+    return (args.data);
 }
-
-

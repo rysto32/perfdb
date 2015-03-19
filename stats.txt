@@ -78,9 +78,21 @@ cpu INTEL_HASWELL_XEON
 
         stat "RAM Wr (Gb)"
         8 * 64 * IMC.CAS_COUNT.WR / (1024 * 1024 * 1024)
-        good 2
-        ok 4
-        bad 6
+        good 5
+        ok 10
+        bad 15
+
+        stat "Cbo Down (Gb)"
+        8 * 32 * CBO.RING_BL_USED.DOWN / (1024 * 1024 * 1024)
+        good 15
+        ok 25
+        bad 35
+
+        stat "Cbo Up (Gb)"
+        8 * 32 * CBO.RING_BL_USED.UP / (1024 * 1024 * 1024)
+        good 15
+        ok 25
+        bad 35
 
         stat "PCIe Down (Gb)"
         (R2PCIE.RING_BL_USED.CCW * 32 * 8) / (1024 * 1024 * 1024)
@@ -117,15 +129,15 @@ cpu INTEL_HASWELL_XEON
 
         stat "Write_BW (Gb)"
         8 * 64 * IMC.CAS_COUNT.WR / (1024 * 1024 * 1024)
-        good 2
-        ok 4
-        bad 6
+        good 5
+        ok 10
+        bad 15
 
         stat "BW (Gb)"
         8 * 64 * (IMC.CAS_COUNT.RD + IMC.CAS_COUNT.WR) / (1024 * 1024 * 1024)
-        good 2
-        ok 4
-        bad 6
+        good 5
+        ok 10
+        bad 15
 
     page R2PCIe
     shortcut P

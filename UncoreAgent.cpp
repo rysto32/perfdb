@@ -1,9 +1,12 @@
 
 #include "UncoreAgent.h"
 
+#include "UncoreMsrUnit.h"
+#include "UncorePciUnit.h"
 #include "StatContext.h"
 
 #include <fcntl.h>
+#include <sys/cpuctl.h>
 #include <sys/ioctl.h>
 #include <sys/pciio.h>
 
@@ -25,7 +28,7 @@ UncoreAgent::~UncoreAgent()
 }
 
 void
-UncoreAgent::AddUnit(int bus, int slot, int f)
+UncoreAgent::AddPciUnit(int bus, int slot, int f)
 {
     int fd = open("/dev/pci", O_RDWR);
     if (fd < 0)
@@ -42,12 +45,26 @@ UncoreAgent::AddUnit(int bus, int slot, int f)
     int error = ioctl(fd, PCIOCREAD, &io);
 
     if (error == 0)
-        units.push_back(new UncoreUnit(bus, slot, f));
+        units.push_back(new UncorePciUnit(bus, slot, f));
 
     close(fd);
 }
 
-#include <iostream>
+void
+UncoreAgent::AddMsrUnit(uint32_t baseMsr)
+{
+    cpuctl_msr_args_t args;
+    int error;
+    int fd = open("/dev/cpuctl0", O_RDWR);
+
+    args.msr = baseMsr;
+
+    error = ioctl(fd, CPUCTL_RDMSR, &args);
+
+    if (error == 0)
+        units.push_back(new UncoreMsrUnit(baseMsr));
+    close(fd);
+}
 
 void
 UncoreAgent::ConfigureCounter(const UncoreCounter & counter, const UncoreEvent & ev)

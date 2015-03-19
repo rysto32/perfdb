@@ -38,47 +38,63 @@ UncoreContext::UncoreContext()
         AddEvent(UncoreEvent("R2PCIE.RING_BL_USED.CW", UNCORE_R2PCIE, 0x09, 0x03));
         AddEvent(UncoreEvent("R2PCIE.RING_BL_USED.CCW", UNCORE_R2PCIE, 0x09, 0x0C));
         AddEvent(UncoreEvent("R2PCIE.CLOCKTICKS", UNCORE_R2PCIE, 0x01, 0));
+
+        counters.push_back(UncoreCounter(UNCORE_CBOXN, 0x02, 0x09));
+        counters.push_back(UncoreCounter(UNCORE_CBOXN, 0x03, 0x0A));
+        counters.push_back(UncoreCounter(UNCORE_CBOXN, 0x04, 0x0B));
+        counters.push_back(UncoreCounter(UNCORE_CBOX0, 0x01, 0x08));
+
+        AddEvent(UncoreEvent("CBO.CLOCKTICKS", UNCORE_CBOX_ANY, 0x00, 0x00));
+        AddEvent(UncoreEvent("CBO.RING_BL_USED.UP", UNCORE_CBOX_ANY, 0x1d, 0x03));
+        AddEvent(UncoreEvent("CBO.RING_BL_USED.DOWN", UNCORE_CBOX_ANY, 0x1d, 0x0C));
     }
 
     // Integrated Memory Controller
     UncoreAgent *imc = new UncoreAgent(IMC_AGENT);
     agentsList.push_back(imc);
+    agents[UNCORE_IMC_FIXED] = imc;
+    agents[UNCORE_IMC] = imc;
 
     UncoreAgent *pcie = new UncoreAgent(R2PCIE_AGENT);
     agentsList.push_back(pcie);
+    agents[UNCORE_R2PCIE] = pcie;
+
+    UncoreAgent *cbox = new UncoreAgent(CBOX_AGENT);
+    agentsList.push_back(cbox);
+    agents[UNCORE_CBOX0] = cbox;
+    agents[UNCORE_CBOXN] = cbox;
 
     switch (cpu_type)
     {
     case CPU_TYPE_SANDY_BRIDGE:
-        imc->AddUnit(255, 16, 5);
-        imc->AddUnit(255, 16, 0);
-        imc->AddUnit(255, 16, 1);
+        imc->AddPciUnit(255, 16, 5);
+        imc->AddPciUnit(255, 16, 0);
+        imc->AddPciUnit(255, 16, 1);
         break;
 
     case CPU_TYPE_IVY_BRIDGE:
-        imc->AddUnit(255, 16, 4);
-        imc->AddUnit(255, 16, 5);
-        imc->AddUnit(255, 16, 0);
-        imc->AddUnit(255, 16, 1);
+        imc->AddPciUnit(255, 16, 4);
+        imc->AddPciUnit(255, 16, 5);
+        imc->AddPciUnit(255, 16, 0);
+        imc->AddPciUnit(255, 16, 1);
         break;
     case CPU_TYPE_HASWELL:
-        imc->AddUnit(255, 20, 0);
-        imc->AddUnit(255, 20, 1);
-        imc->AddUnit(255, 21, 0);
-        imc->AddUnit(255, 21, 1);
+        imc->AddPciUnit(255, 20, 0);
+        imc->AddPciUnit(255, 20, 1);
+        imc->AddPciUnit(255, 21, 0);
+        imc->AddPciUnit(255, 21, 1);
 
-        imc->AddUnit(255, 23, 0);
-        imc->AddUnit(255, 23, 1);
-        imc->AddUnit(255, 24, 0);
-        imc->AddUnit(255, 24, 1);
+        imc->AddPciUnit(255, 23, 0);
+        imc->AddPciUnit(255, 23, 1);
+        imc->AddPciUnit(255, 24, 0);
+        imc->AddPciUnit(255, 24, 1);
 
-        pcie->AddUnit(255, 16, 1);
+        pcie->AddPciUnit(255, 16, 1);
+
+        for (int i = 0; i < 18; i++)
+            cbox->AddMsrUnit(0x0E00 + 0x10 * i);
         break;
     }
-
-    agents[UNCORE_IMC_FIXED] = imc;
-    agents[UNCORE_IMC] = imc;
-    agents[UNCORE_R2PCIE] = pcie;
 }
 
 UncoreContext::~UncoreContext()
@@ -277,7 +293,7 @@ UncoreContext::getNumAgents(CounterAgent agent) const
         agentMask = UNCORE_R2PCIE;
         break;
     case CBOX_AGENT:
-        agentMask = UNCORE_CBOX;
+        agentMask = UNCORE_CBOX0;
         break;
 
     case ANY_AGENT:

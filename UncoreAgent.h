@@ -22,7 +22,8 @@ public:
     UncoreAgent(CounterAgent agent);
     ~UncoreAgent();
 
-    void AddUnit(int bus, int slot, int f);
+    void AddPciUnit(int bus, int slot, int f);
+    void AddMsrUnit(uint32_t base_msr);
 
     void ConfigureCounter(const UncoreCounter & counter, const UncoreEvent & ev);
     void UnconfigureCounter(const UncoreCounter &counter);

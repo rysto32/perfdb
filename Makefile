@@ -13,6 +13,8 @@ SRCS := \
 	UncoreContext.cpp \
 	UncoreCounter.cpp \
 	UncoreEvent.cpp \
+	UncorePciUnit.cpp \
+	UncoreMsrUnit.cpp \
 	UncoreUnit.cpp \
 
 CLEANFILES+= lex.cpp parser.cpp parser.cpp.h parser.i
